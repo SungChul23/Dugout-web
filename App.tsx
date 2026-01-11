@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import AnalysisRing from './components/AnalysisRing';
@@ -10,7 +11,8 @@ import TicketReservation from './components/TicketReservation';
 import GuidePage from './components/GuidePage';
 import KboNews from './components/KboNews';
 import MyDashboard from './components/MyDashboard'; 
-import FindMyTeam from './components/FindMyTeam'; // New Import
+import FindMyTeam from './components/FindMyTeam';
+import GameSchedule from './components/GameSchedule'; // New Import
 
 interface User {
   nickname: string;
@@ -18,7 +20,7 @@ interface User {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam'>('home');
+  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule'>('home');
   const [user, setUser] = useState<User | null>(null);
 
   const navigateToHome = () => setView('home');
@@ -42,7 +44,11 @@ function App() {
   };
   
   const handleFeatureClick = (id: string) => {
-    if (id === '3') {
+    if (id === '2') {
+      // Game Schedule
+      setView('schedule');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (id === '3') {
       navigateToNews();
     } else if (id === '7') {
       setView('tickets');
@@ -145,6 +151,7 @@ function App() {
         {view === 'guide' && <GuidePage onCancel={navigateToHome} />}
         {view === 'news' && <KboNews onCancel={navigateToHome} defaultTeam={user?.favoriteTeam} />}
         {view === 'findTeam' && <FindMyTeam onCancel={navigateToHome} />}
+        {view === 'schedule' && <GameSchedule onCancel={navigateToHome} user={user} />}
         {view === 'dashboard' && user && (
           <MyDashboard 
             user={user} 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 const API_BASE_URL = "https://dugout.cloud";
@@ -78,6 +79,20 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
           link: "#", 
           originallink: "#" 
         },
+        { 
+          title: `<b>${category}</b>, 불펜 과부하 우려? 감독의 해법은`, 
+          description: "최근 접전이 이어지며 불펜 투구수가 급증하고 있습니다. 코칭스태프는 투수 운용 계획을 전면 재검토하며 휴식 부여에 집중하고 있습니다.", 
+          pubDate: new Date().toISOString(), 
+          link: "#", 
+          originallink: "#" 
+        },
+        { 
+          title: `[현장] <b>${category}</b> 홈 경기장, 역대급 관중 몰이`, 
+          description: "평일 경기임에도 불구하고 매진에 가까운 관중이 들어찼습니다. 팬들의 뜨거운 응원 열기가 선수들에게 큰 힘이 되고 있다는 후문입니다.", 
+          pubDate: new Date().toISOString(), 
+          link: "#", 
+          originallink: "#" 
+        },
       ]);
     } finally {
       setLoading(false);
@@ -147,7 +162,7 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
         {/* News Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[...Array(4)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-[#0a0f1e]/50 border border-white/5 rounded-3xl p-8 h-64 animate-pulse">
                 <div className="h-6 bg-white/5 rounded w-3/4 mb-4"></div>
                 <div className="h-4 bg-white/5 rounded w-full mb-2"></div>
