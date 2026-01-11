@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 const API_BASE_URL = "https://dugout.cloud";
@@ -10,9 +11,10 @@ const KBO_TEAMS = [
 
 interface SignupProps {
   onCancel: () => void;
+  onLoginSuccess: (nickname: string, favoriteTeam: string) => void;
 }
 
-const Signup: React.FC<SignupProps> = ({ onCancel }) => {
+const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     nickname: '',
     email: '',
@@ -23,35 +25,49 @@ const Signup: React.FC<SignupProps> = ({ onCancel }) => {
 
   const [checkingId, setCheckingId] = useState(false);
   const [idAvailable, setIdAvailable] = useState<boolean | null>(null);
+  const [nicknameMessage, setNicknameMessage] = useState<string>(''); // 서버 메시지 저장
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (name === 'nickname') setIdAvailable(null); // Reset check on change
+    if (name === 'nickname') {
+      setIdAvailable(null);
+      setNicknameMessage('');
+    }
   };
 
   const checkNickname = async () => {
     if (!formData.nickname) return;
     setCheckingId(true);
     setError(null);
+    setNicknameMessage('');
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/members/check-id?nickname=${encodeURIComponent(formData.nickname)}`);
       
-    // 2. 서버가 보낸 true(사용가능) 또는 false(중복됨) 값을 읽습니다.
-    const isAvailable = await response.json(); 
-    
-    // 3. 서버의 실제 결과를 상태에 반영합니다.
-    setIdAvailable(isAvailable); 
-    
-  } catch (err) {
-    console.error(err);
-    setError('닉네임 중복 확인 중 오류가 발생했습니다');
-  } finally {
-    setCheckingId(false);
-  }
-};
+      if (!response.ok) {
+        throw new Error('서버 통신 오류가 발생했습니다.');
+      }
+
+      // NicknameCheckResponseDto: { isAvailable: boolean, message: string }
+      const data = await response.json();
+      
+      // isAvailable 필드가 없는 경우 대비 (Jackson serialization issue 등)
+      const available = data.isAvailable !== undefined ? data.isAvailable : data.available;
+      
+      setIdAvailable(!!available);
+      setNicknameMessage(data.message || (available ? '사용 가능한 닉네임입니다.' : '사용할 수 없는 닉네임입니다.'));
+      
+    } catch (err) {
+      console.error(err);
+      setError('닉네임 중복 확인 중 오류가 발생했습니다');
+      setIdAvailable(null);
+    } finally {
+      setCheckingId(false);
+    }
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,18 +99,32 @@ const Signup: React.FC<SignupProps> = ({ onCancel }) => {
         })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Signup failed');
+        throw new Error(data.message || '회원가입에 실패했습니다.');
       }
 
+      // AccessToken 저장
+      if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+      }
+      
+      // RefreshToken은 HttpOnly Cookie로 처리됨
+
       setTimeout(() => {
-        alert('회원가입이 완료되었습니다!');
+        alert(`${formData.nickname}님 환영합니다! 자동으로 로그인되었습니다.`);
         setLoading(false);
-        onCancel();
+
+        // 사용자가 입력한 정보를 우선 사용하여 로그인 상태 업데이트 (서버 응답 불일치 방지)
+        onLoginSuccess(formData.nickname, formData.favoriteTeam);
+
+        onCancel(); 
       }, 500);
-    } catch (err) {
+      
+    } catch (err: any) {
       console.error(err);
-      setError('회원가입 처리 중 오류가 발생했습니다.');
+      setError(err.message || '회원가입 처리 중 오류가 발생했습니다.');
       setLoading(false);
     }
   };
@@ -146,8 +176,18 @@ const Signup: React.FC<SignupProps> = ({ onCancel }) => {
                 {checkingId ? '확인 중...' : '중복 확인'}
               </button>
             </div>
-            {idAvailable === true && <p className="text-[10px] text-green-400 ml-1 flex items-center gap-1"><span className="w-1 h-1 bg-green-400 rounded-full"></span>사용 가능한 닉네임입니다.</p>}
-            {idAvailable === false && <p className="text-[10px] text-red-400 ml-1 flex items-center gap-1"><span className="w-1 h-1 bg-red-400 rounded-full"></span>이미 사용 중인 닉네임입니다.</p>}
+            {idAvailable === true && (
+              <p className="text-[10px] text-green-400 ml-1 flex items-center gap-1">
+                <span className="w-1 h-1 bg-green-400 rounded-full"></span>
+                {nicknameMessage || '사용 가능한 닉네임입니다.'}
+              </p>
+            )}
+            {idAvailable === false && (
+              <p className="text-[10px] text-red-400 ml-1 flex items-center gap-1">
+                <span className="w-1 h-1 bg-red-400 rounded-full"></span>
+                {nicknameMessage || '이미 사용 중인 닉네임입니다.'}
+              </p>
+            )}
           </div>
 
           {/* Email Field */}
@@ -230,7 +270,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel }) => {
               disabled={loading}
               className="w-full bg-gradient-to-r from-brand-accent to-brand-primary hover:from-cyan-400 hover:to-blue-400 text-brand-dark font-black py-4 rounded-xl text-lg shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:transform-none"
             >
-              {loading ? '가입 처리 중...' : '회원가입 완료'}
+              {loading ? '가입 및 로그인 처리 중...' : '회원가입 완료 (자동 로그인)'}
             </button>
           </div>
         </form>

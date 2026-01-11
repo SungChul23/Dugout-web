@@ -70,6 +70,8 @@ function App() {
   };
 
   const handleLogout = () => {
+    // 로그아웃 시 토큰 삭제
+    localStorage.removeItem('accessToken');
     setUser(null);
     setView('home');
     alert('로그아웃 되었습니다.');
@@ -145,7 +147,8 @@ function App() {
           </div>
         )}
 
-        {view === 'signup' && <Signup onCancel={navigateToHome} />}
+        {/* Signup 컴포넌트에 onLoginSuccess 전달 */}
+        {view === 'signup' && <Signup onCancel={navigateToHome} onLoginSuccess={handleLoginSuccess} />}
         {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} onCancel={navigateToHome} onSignupClick={navigateToSignup} />}
         {view === 'tickets' && <TicketReservation onCancel={navigateToHome} />}
         {view === 'guide' && <GuidePage onCancel={navigateToHome} />}

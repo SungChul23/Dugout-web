@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 const API_BASE_URL = "https://dugout.cloud";
@@ -49,12 +50,19 @@ const Login: React.FC<LoginProps> = ({ onCancel, onSignupClick, onLoginSuccess }
       throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
     }
 
-    // 2. 서버가 보낸 실제 데이터(예: { "nickname": "성철", "favoriteTeam": "KIA 타이거즈" })를 읽음
-    const data = await response.json(); 
+    // 2. 서버가 보낸 실제 데이터(예: { accessToken: "...", "nickname": "성철", "favoriteTeam": "KIA 타이거즈" })를 읽음
+    const data = await response.json();
+    
+    // 3. AccessToken을 LocalStorage에 저장
+    if (data.accessToken) {
+      localStorage.setItem('accessToken', data.accessToken);
+    }
+    
+    // RefreshToken은 HttpOnly Cookie로 설정되어 있다고 가정 (브라우저 자동 관리)
     
     setSuccess(true);
     
-    // 3. 서버에서 받은 진짜 닉네임과 선호 구단으로 로그인 처리
+    // 4. 서버에서 받은 진짜 닉네임과 선호 구단으로 로그인 상태 업데이트
     setTimeout(() => {
       onLoginSuccess(data.nickname, data.favoriteTeam); 
     }, 500);
