@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 
 const API_BASE_URL = "https://dugout.cloud";
@@ -7,13 +8,13 @@ const NEWS_CATEGORIES = [
   { id: 'KIA 타이거즈', color: '#ff1a1a' }, // 밝은 레드
   { id: '삼성 라이온즈', color: '#3399ff' }, // 밝은 블루
   { id: 'LG 트윈스', color: '#ff1a8c' }, // 핫핑크
-  { id: '두산 베어스', color: '#5c6bc0' }, // 조정: 밝은 인디고 네이비
-  { id: 'kt wiz', color: '#f5f5f5' },      // 조정: 밝은 실버/화이트
+  { id: '두산 베어스', color: '#1A1748' }, // 남색
+  { id: 'KT 위즈', color: '#f5f5f5' },      // 밝은 실버/화이트 (수정됨)
   { id: 'SSG 랜더스', color: '#ff4d4d' }, // 밝은 레드
   { id: '한화 이글스', color: '#ff8c1a' }, // 밝은 오렌지
-  { id: '롯데 자이언츠', color: '#00a8ff' }, // 조정: 밝은 스카이 블루
-  { id: 'NC 다이노스', color: '#4facfe' }, // 밝은 블루-시안
-  { id: '키움 히어로즈', color: '#e91e63' }, // 밝은 버건디-핑크
+  { id: '롯데 자이언츠', color: '#041E42' }, // 군청색
+  { id: 'NC 다이노스', color: '#315288' }, // 마린블루
+  { id: '키움 히어로즈', color: '#570514' }, // 버건디
   { id: '메이저리그 코리안리거', color: '#00e5ff' }, // 네온 시안
 ];
 
@@ -100,6 +101,10 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
   };
 
   const activeColor = NEWS_CATEGORIES.find(c => c.id === activeCategory)?.color || '#00e5ff';
+  
+  // KT 위즈(밝은 배경)일 경우 텍스트를 검은색으로 표시
+  const isLightTeam = activeCategory === 'KT 위즈';
+  const textColorClass = isLightTeam ? 'text-black' : 'text-white';
 
   const cleanText = (text: string) => text.replace(/<b>/g, '').replace(/<\/b>/g, '').replace(/&quot;/g, '"');
   const formatDate = (dateStr: string) => {
@@ -151,7 +156,7 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
               style={{ 
                 backgroundColor: activeCategory === cat.id ? cat.color : undefined,
                 boxShadow: activeCategory === cat.id ? `0 10px 30px -5px ${cat.color}88` : undefined,
-                color: activeCategory === cat.id && cat.id === 'kt wiz' ? '#000' : undefined // kt는 폰트색 반전
+                color: activeCategory === cat.id && cat.id === 'KT 위즈' ? '#000' : undefined // kt는 폰트색 반전
               }}
             >
               {cat.id}
@@ -180,7 +185,7 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
                 rel="noopener noreferrer"
                 className="group relative bg-gradient-to-br from-[#0a0f1e] to-[#020617] backdrop-blur-xl border-2 rounded-[2.5rem] p-8 md:p-10 transition-all duration-500 flex flex-col justify-between overflow-hidden hover:-translate-y-3"
                 style={{ 
-                  borderColor: `${activeColor}44`, // 기본 보더 밝기 강화
+                  borderColor: `${activeColor}44`, // 보더는 은은하게
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = activeColor;
@@ -199,22 +204,26 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
                 
                 <div>
                   <div className="flex justify-between items-center mb-8">
+                    {/* 날짜 뱃지: 배경을 채우고 텍스트를 흰색으로 변경하여 가독성 확보 */}
                     <span 
-                      className="text-[11px] font-mono font-black px-4 py-1.5 rounded-full border-2 uppercase tracking-[0.15em] transition-all duration-500"
+                      className={`text-[11px] font-mono font-black px-4 py-1.5 rounded-full border border-white/10 uppercase tracking-[0.15em] transition-all duration-500 ${textColorClass}`}
                       style={{ 
-                        color: activeColor, 
-                        borderColor: `${activeColor}66`,
-                        backgroundColor: `${activeColor}11`
+                        backgroundColor: activeColor, // 배경 채움
+                        borderColor: activeColor,
+                        boxShadow: `0 0 12px ${activeColor}80`, // 네온 효과
+                        textShadow: isLightTeam ? 'none' : '0 1px 2px rgba(0,0,0,0.3)'
                       }}
                     >
                       {formatDate(item.pubDate)}
                     </span>
+                    
+                    {/* 아이콘: 통일감을 위해 배경 채움 */}
                     <div 
-                      className="w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-500"
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${textColorClass}`}
                       style={{ 
-                        color: activeColor,
-                        borderColor: `${activeColor}33`,
-                        backgroundColor: `${activeColor}08`
+                        backgroundColor: activeColor,
+                        borderColor: activeColor,
+                        boxShadow: `0 0 10px ${activeColor}40`
                       }}
                     >
                       <svg className="w-5 h-5 transform group-hover:rotate-45 group-hover:scale-125 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,11 +241,14 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
                   </p>
                 </div>
 
+                {/* VIEW ARTICLE: 텍스트는 밝은색 고정, 장식 Bar에만 컬러 적용 */}
                 <div 
-                  className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.3em] transition-all duration-500"
-                  style={{ color: activeColor }}
+                  className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.3em] transition-all duration-500 text-slate-300 group-hover:text-white"
                 >
-                  <span className="w-12 h-[3px] rounded-full transition-all duration-500 group-hover:w-20" style={{ backgroundColor: activeColor }}></span>
+                  <span 
+                    className="w-12 h-[3px] rounded-full transition-all duration-500 group-hover:w-20 shadow-[0_0_10px_currentColor]" 
+                    style={{ backgroundColor: activeColor, color: activeColor }}
+                  ></span>
                   VIEW ARTICLE
                 </div>
               </a>

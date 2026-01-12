@@ -64,7 +64,7 @@ const Login: React.FC<LoginProps> = ({ onCancel, onSignupClick, onLoginSuccess }
     
     // 4. 서버에서 받은 진짜 닉네임과 선호 구단으로 로그인 상태 업데이트
     setTimeout(() => {
-      onLoginSuccess(data.nickname, data.favoriteTeam); 
+      onLoginSuccess(data.nickname, data.favoriteTeamName); 
     }, 500);
 
   } catch (err) {

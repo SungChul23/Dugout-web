@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 const API_BASE_URL = "https://dugout.cloud";
 
 const KBO_TEAMS = [
-  'KIA 타이거즈', '삼성 라이온즈', 'LG 트윈스', '두산 베어스', 'kt wiz',
+  'KIA 타이거즈', '삼성 라이온즈', 'LG 트윈스', '두산 베어스', 'KT 위즈',
   'SSG 랜더스', '한화 이글스', '롯데 자이언츠', 'NC 다이노스', '키움 히어로즈',
   '없음'
 ];
@@ -257,6 +257,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
             </div>
           </div>
 
+          {/* Error Message */}
           {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-xs flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>

@@ -1,4 +1,5 @@
 
+
 import { Team, Feature, TickerItem } from './types';
 
 export const TEAMS: Team[] = [
@@ -39,7 +40,7 @@ export const TEAMS: Team[] = [
     rank: 4, 
     winRate: 0.515, 
     gamesBehind: 9.0, 
-    color: '#5c6bc0',
+    color: '#1A1748', // 남색
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB004'
   },
   { 
@@ -79,7 +80,7 @@ export const TEAMS: Team[] = [
     rank: 8, 
     winRate: 0.465, 
     gamesBehind: 15.5, 
-    color: '#00a8ff',
+    color: '#041E42', // 군청색
     ticketUrl: 'https://www.giantsclub.com/html/?pcode=339'
   },
   { 
@@ -89,7 +90,7 @@ export const TEAMS: Team[] = [
     rank: 9, 
     winRate: 0.450, 
     gamesBehind: 17.5, 
-    color: '#4facfe',
+    color: '#315288', // 마린블루
     ticketUrl: 'https://www.ncdinos.com/homepage.do'
   },
   { 
@@ -99,13 +100,13 @@ export const TEAMS: Team[] = [
     rank: 10, 
     winRate: 0.415, 
     gamesBehind: 22.0, 
-    color: '#e91e63',
+    color: '#570514', // 버건디
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB003'
   },
 ];
 
 export const FEATURES: Feature[] = [
-  { id: '1', category: 'Game Data Center', title: 'KBO 팀/선수 순위', description: '실제 기록과 AI 보정 지표를 비교 분석' },
+  { id: '1', category: 'Game Data Center', title: 'KBO 팀/성적 순위', description: '실제 기록과 AI 보정 지표를 비교 분석' },
   { id: '2', category: 'Game Data Center', title: '경기 일정 & 라인업', description: '전 구단 경기 일정 및 실시간 라인업 확인' },
   { id: '3', category: 'Game Data Center', title: '실시간 KBO 뉴스', description: '구단별 주요 속보와 이슈 큐레이션' },
   { id: '4', category: 'AI Predictive Insight', title: '선수 미래 성적 예측', description: '타율, ERA 등 시즌 종료 시점 성적 시뮬레이션' },

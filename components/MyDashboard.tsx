@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { TEAMS, KEY_PLAYERS } from '../constants';
+import { TEAMS } from '../constants';
+
+const API_BASE_URL = "https://dugout.cloud";
 
 interface MyDashboardProps {
   user: { nickname: string; favoriteTeam?: string };
@@ -8,23 +10,123 @@ interface MyDashboardProps {
   onUpdateTeam: (newTeam: string) => void;
 }
 
+// 서버 DTO 구조
+interface PlayerInsightDto {
+  slotNumber: number;
+  playerId: number;
+  name: string;
+  position: string;
+  predictedStat: string; // 예: "0.352 (MVP 유력)"
+  confidence: number;   // 신뢰도 (0~100)
+  isEmpty: boolean;
+}
+
+interface DashboardResponse {
+  favoriteTeamName: string;
+  insights: PlayerInsightDto[];
+}
+
+// Internal Sub-component: Settings Modal
+const SettingsModal: React.FC<{currentTeam: string, onClose: () => void, onUpdate: (t: string) => void, color: string}> = ({ currentTeam, onClose, onUpdate, color }) => {
+  const [selected, setSelected] = useState(currentTeam);
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl animate-fade-in-up">
+        <h3 className="text-xl font-bold text-white mb-6">선호 구단 변경</h3>
+        <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          {TEAMS.map(team => (
+            <button
+              key={team.id}
+              onClick={() => setSelected(team.name)}
+              className={`w-full text-left px-5 py-4 rounded-xl border transition-all flex items-center justify-between ${selected === team.name ? 'bg-white/10 border-white/30' : 'bg-transparent border-white/5 hover:bg-white/5'}`}
+            >
+              <div className="flex items-center gap-3">
+                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: team.color }}></div>
+                 <span className={selected === team.name ? 'text-white font-bold' : 'text-slate-400'}>{team.name}</span>
+              </div>
+              {selected === team.name && <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-3 mt-8">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-white/10 text-slate-400 hover:text-white transition-colors">취소</button>
+          <button 
+            onClick={() => { onUpdate(selected); onClose(); }} 
+            className="flex-1 py-3 rounded-xl font-bold text-white shadow-lg"
+            style={{ backgroundColor: color }}
+          >
+            저장하기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpdateTeam }) => {
   const [showSettings, setShowSettings] = useState(false);
+  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // 1. 선호 팀 데이터 매핑
-  const myTeam = TEAMS.find(t => t.name === user.favoriteTeam);
-  
-  // 2. 핵심 선수 데이터 매핑 (없으면 default 사용)
-  const players = user.favoriteTeam && KEY_PLAYERS[user.favoriteTeam] 
-    ? KEY_PLAYERS[user.favoriteTeam] 
-    : KEY_PLAYERS['default'];
+  // 데이터 가져오기
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-  // 팀 컬러 또는 기본 컬러
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/dashboard`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setDashboardData(data);
+        } else {
+          console.error("Failed to fetch dashboard data");
+        }
+      } catch (error) {
+        console.error("API Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, [user.favoriteTeam]); // 팀 변경 시 재호출
+
+  // 팀 정보 매칭 (서버 데이터 우선, 없으면 로컬 user prop 사용)
+  const currentTeamName = dashboardData?.favoriteTeamName || user.favoriteTeam;
+  
+  // TEAMS 상수에서 매칭되는 팀 정보 찾기 (공백 제거 후 비교 등 유연한 매칭)
+  const myTeam = TEAMS.find(t => 
+    t.name === currentTeamName || 
+    t.name.replace(/\s/g, '') === currentTeamName?.replace(/\s/g, '')
+  );
+
   const teamColor = myTeam?.color || '#06b6d4';
-  const isKtWiz = user.favoriteTeam === 'kt wiz'; // kt wiz는 흰색 배경이라 텍스트 컬러 조정 필요
+  
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center animate-pulse">
+        <div className="w-16 h-16 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-400">AI가 데이터를 분석 중입니다...</p>
+      </div>
+    );
+  }
 
   // --- CASE 1: 팀이 없는 경우 (Empty State) ---
-  if (!user.favoriteTeam || user.favoriteTeam === '없음') {
+  if (!currentTeamName || currentTeamName === '없음' || currentTeamName === '') {
     return (
       <div className="relative z-10 w-full animate-fade-in-up min-h-[60vh] flex items-center justify-center">
         <div className="max-w-2xl mx-auto px-6 text-center">
@@ -64,7 +166,7 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpda
         {/* Settings Modal (Team Selector) */}
         {showSettings && (
           <SettingsModal 
-            currentTeam={user.favoriteTeam || ''} 
+            currentTeam={currentTeamName || ''} 
             onClose={() => setShowSettings(false)} 
             onUpdate={onUpdateTeam}
             color={teamColor}
@@ -75,6 +177,12 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpda
   }
 
   // --- CASE 2: 팀이 있는 경우 (Dashboard) ---
+  const insights = dashboardData?.insights || [
+    { slotNumber: 1, isEmpty: true },
+    { slotNumber: 2, isEmpty: true },
+    { slotNumber: 3, isEmpty: true },
+  ] as PlayerInsightDto[];
+
   return (
     <div className="relative z-10 w-full animate-fade-in-up pb-24">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -101,7 +209,7 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpda
                    </button>
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black text-white uppercase italic tracking-tighter leading-none mb-2">
-                  {myTeam?.name.split(' ')[0]} <span style={{ color: teamColor }}>{myTeam?.name.split(' ')[1]}</span>
+                  {myTeam?.name.split(' ')[0]} <span style={{ color: teamColor }}>{myTeam?.name.split(' ')[1] || ''}</span>
                 </h1>
                 <p className="text-slate-400 font-light text-lg">
                   {user.nickname}님의 전용 데이터 대시보드
@@ -112,13 +220,13 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpda
               <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl p-6 flex items-center gap-8 min-w-[280px]">
                  <div>
                     <span className="block text-xs text-slate-400 uppercase tracking-widest mb-1">Current Rank</span>
-                    <span className="text-5xl font-black text-white italic">#{myTeam?.rank}</span>
+                    <span className="text-5xl font-black text-white italic">#{myTeam?.rank || '-'}</span>
                  </div>
                  <div className="h-12 w-[1px] bg-white/10"></div>
                  <div>
                     <div className="flex justify-between w-32 mb-1">
                       <span className="text-xs text-slate-400">Win Rate</span>
-                      <span className="text-xs font-mono font-bold" style={{ color: teamColor }}>{myTeam?.winRate}</span>
+                      <span className="text-xs font-mono font-bold" style={{ color: teamColor }}>{myTeam?.winRate || '-.--'}</span>
                     </div>
                     <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
                       <div 
@@ -126,7 +234,7 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpda
                         style={{ width: `${(myTeam?.winRate || 0) * 100}%`, backgroundColor: teamColor }}
                       ></div>
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-2 text-right">게임차 {myTeam?.gamesBehind}</p>
+                    <p className="text-[10px] text-slate-500 mt-2 text-right">게임차 {myTeam?.gamesBehind ?? '-'}</p>
                  </div>
               </div>
            </div>
@@ -146,48 +254,68 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpda
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {players.map((player, idx) => (
-                <div 
-                  key={idx}
-                  className="bg-[#0a0f1e]/80 border border-white/5 p-6 rounded-3xl relative overflow-hidden group hover:-translate-y-2 transition-all duration-300"
-                  style={{ borderColor: `${teamColor}33` }}
-                >
-                  {/* Background Accents */}
-                  <div className="absolute -right-10 -top-10 w-32 h-32 opacity-10 blur-3xl rounded-full" style={{ backgroundColor: teamColor }}></div>
-                  
-                  <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center border border-white/5 text-slate-500 font-black">
-                         {/* Placeholder for Player Face */}
-                         {player.position}
-                      </div>
-                      <div className="text-right">
-                        <span className="block text-2xl font-black text-white italic">{player.statValue}</span>
-                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{player.statLabel}</span>
-                      </div>
-                    </div>
+              {insights.map((insight, idx) => {
+                // predictedStat 파싱 (예: "0.352 (MVP 유력)" -> value: 0.352, label: MVP 유력)
+                let mainValue = "-";
+                let subLabel = "";
+                
+                if (insight.predictedStat) {
+                  const parts = insight.predictedStat.split(' ');
+                  mainValue = parts[0];
+                  subLabel = parts.slice(1).join(' ').replace(/[()]/g, ''); // 괄호 제거
+                }
 
-                    <h4 className="text-xl font-bold text-white mb-1">{player.name}</h4>
-                    <div className="w-full h-[1px] bg-white/10 my-4"></div>
+                return (
+                  <div 
+                    key={idx}
+                    className="bg-[#0a0f1e]/80 border border-white/5 p-6 rounded-3xl relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between min-h-[220px]"
+                    style={{ borderColor: `${teamColor}33` }}
+                  >
+                    {/* Background Accents */}
+                    <div className="absolute -right-10 -top-10 w-32 h-32 opacity-10 blur-3xl rounded-full" style={{ backgroundColor: teamColor }}></div>
+                    
+                    {insight.isEmpty ? (
+                      // Empty / Loading State for Slot
+                      <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-3">
+                         <div className="w-12 h-12 rounded-full border-2 border-slate-700 border-dashed animate-spin-slow"></div>
+                         <span className="text-xs font-mono">PLAYER ANALYSIS...</span>
+                      </div>
+                    ) : (
+                      <div className="relative z-10 flex flex-col h-full">
+                        {/* Header: Position & Main Stat */}
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center border border-white/5 text-slate-400 font-black text-xs">
+                             {insight.position}
+                          </div>
+                          <div className="text-right">
+                             {/* Main AI Prediction Value */}
+                            <span className="block text-3xl font-black text-white italic tracking-tight">{mainValue}</span>
+                            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{subLabel || 'AI PREDICTION'}</span>
+                          </div>
+                        </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                         <span className="text-xs text-slate-400">AI 예측 (시즌)</span>
-                         <span className="text-xs font-bold" style={{ color: teamColor }}>{player.aiPrediction}</span>
+                        {/* Player Name */}
+                        <h4 className="text-xl font-bold text-white mb-auto">{insight.name}</h4>
+                        
+                        <div className="w-full h-[1px] bg-white/10 my-4"></div>
+
+                        {/* Footer: Confidence */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                             <span className="text-xs text-slate-400">예측 신뢰도</span>
+                             <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold" style={{ color: teamColor }}>{insight.confidence}%</span>
+                             </div>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                             <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${insight.confidence}%`, backgroundColor: teamColor }}></div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                         <span className="text-xs text-slate-400">예측 신뢰도</span>
-                         <div className="flex items-center gap-2">
-                            <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                               <div className="h-full rounded-full" style={{ width: `${player.aiConfidence}%`, backgroundColor: teamColor }}></div>
-                            </div>
-                            <span className="text-[10px] text-slate-500">{player.aiConfidence}%</span>
-                         </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Additional Chart / Graph Placeholder */}
@@ -253,51 +381,12 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onUpda
         {/* Settings Modal (Reused) */}
         {showSettings && (
           <SettingsModal 
-            currentTeam={user.favoriteTeam || ''} 
+            currentTeam={currentTeamName || ''} 
             onClose={() => setShowSettings(false)} 
             onUpdate={onUpdateTeam}
             color={teamColor}
           />
         )}
-      </div>
-    </div>
-  );
-};
-
-// Internal Sub-component: Settings Modal
-const SettingsModal: React.FC<{currentTeam: string, onClose: () => void, onUpdate: (t: string) => void, color: string}> = ({ currentTeam, onClose, onUpdate, color }) => {
-  const [selected, setSelected] = useState(currentTeam);
-  
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="bg-[#0a0f1e] border border-white/10 rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl animate-fade-in-up">
-        <h3 className="text-xl font-bold text-white mb-6">선호 구단 변경</h3>
-        <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-          {TEAMS.map(team => (
-            <button
-              key={team.id}
-              onClick={() => setSelected(team.name)}
-              className={`w-full text-left px-5 py-4 rounded-xl border transition-all flex items-center justify-between ${selected === team.name ? 'bg-white/10 border-white/30' : 'bg-transparent border-white/5 hover:bg-white/5'}`}
-            >
-              <div className="flex items-center gap-3">
-                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: team.color }}></div>
-                 <span className={selected === team.name ? 'text-white font-bold' : 'text-slate-400'}>{team.name}</span>
-              </div>
-              {selected === team.name && <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-3 mt-8">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-white/10 text-slate-400 hover:text-white transition-colors">취소</button>
-          <button 
-            onClick={() => { onUpdate(selected); onClose(); }} 
-            className="flex-1 py-3 rounded-xl font-bold text-white shadow-lg"
-            style={{ backgroundColor: color }}
-          >
-            저장하기
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -12,7 +12,8 @@ import GuidePage from './components/GuidePage';
 import KboNews from './components/KboNews';
 import MyDashboard from './components/MyDashboard'; 
 import FindMyTeam from './components/FindMyTeam';
-import GameSchedule from './components/GameSchedule'; // New Import
+import GameSchedule from './components/GameSchedule';
+import TeamPlayerStats from './components/TeamPlayerStats'; // New Import
 
 interface User {
   nickname: string;
@@ -20,7 +21,7 @@ interface User {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule'>('home');
+  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats'>('home');
   const [user, setUser] = useState<User | null>(null);
 
   const navigateToHome = () => setView('home');
@@ -34,34 +35,38 @@ function App() {
       navigateToLogin();
     }
   };
-  const navigateToNews = () => {
-    setView('news');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  const navigateToGuide = () => {
-    setView('guide');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
   
-  const handleFeatureClick = (id: string) => {
-    if (id === '2') {
-      // Game Schedule
-      setView('schedule');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (id === '3') {
-      navigateToNews();
-    } else if (id === '7') {
-      setView('tickets');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (id === '9') {
-      navigateToGuide();
-    } else if (id === '8') {
-      // Find My Team Logic
-      setView('findTeam');
+  // 통합 네비게이션 핸들러
+  const handleMenuClick = (targetView: string) => {
+    // 뷰 타입 캐스팅
+    const v = targetView as any;
+    
+    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home'].includes(v)) {
+      setView(v);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      alert('해당 기능은 준비 중입니다.');
+      alert('준비 중인 페이지입니다.');
     }
+  };
+
+  const handleFeatureClick = (id: string) => {
+    if (id === '1') handleMenuClick('stats');
+    else if (id === '2') handleMenuClick('schedule');
+    else if (id === '3') handleMenuClick('news');
+    else if (id === '7') handleMenuClick('tickets');
+    else if (id === '8') handleMenuClick('findTeam');
+    else if (id === '9') handleMenuClick('guide');
+    // AI 예측 관련 기능 (ID 4, 5, 6)
+    else if (['4', '5', '6'].includes(id)) {
+      if (user) {
+        // 로그인한 유저는 대시보드로 안내 (거기에 일부 AI 기능 존재)
+        handleMenuClick('dashboard');
+      } else {
+        alert('이 기능은 회원 전용 AI 서비스입니다. 로그인 후 대시보드에서 확인해주세요.');
+        navigateToLogin();
+      }
+    }
+    else alert('해당 기능은 준비 중입니다.');
   };
 
   const handleLoginSuccess = (nickname: string, favoriteTeam: string) => {
@@ -70,7 +75,6 @@ function App() {
   };
 
   const handleLogout = () => {
-    // 로그아웃 시 토큰 삭제
     localStorage.removeItem('accessToken');
     setUser(null);
     setView('home');
@@ -80,7 +84,6 @@ function App() {
   const handleUpdateTeam = (newTeam: string) => {
     if (user) {
       setUser({ ...user, favoriteTeam: newTeam });
-      // In a real app, you would make an API call here to persist the change
     }
   };
 
@@ -97,8 +100,8 @@ function App() {
         onSignupClick={navigateToSignup}
         onLoginClick={navigateToLogin}
         onLogoutClick={handleLogout}
-        onGuideClick={navigateToGuide}
         onProfileClick={navigateToDashboard}
+        onNavigate={handleMenuClick}
       />
 
       <main className="relative pt-24 pb-12 overflow-hidden min-h-[calc(100vh-80px)]">
@@ -155,6 +158,7 @@ function App() {
         {view === 'news' && <KboNews onCancel={navigateToHome} defaultTeam={user?.favoriteTeam} />}
         {view === 'findTeam' && <FindMyTeam onCancel={navigateToHome} />}
         {view === 'schedule' && <GameSchedule onCancel={navigateToHome} user={user} />}
+        {view === 'stats' && <TeamPlayerStats onCancel={navigateToHome} />}
         {view === 'dashboard' && user && (
           <MyDashboard 
             user={user} 

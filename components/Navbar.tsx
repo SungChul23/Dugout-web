@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 interface NavbarProps {
@@ -6,8 +7,10 @@ interface NavbarProps {
   onSignupClick?: () => void;
   onLoginClick?: () => void;
   onLogoutClick?: () => void;
-  onGuideClick?: () => void;
-  onProfileClick?: () => void; // New prop
+  onProfileClick?: () => void;
+  
+  // Navigation Handlers
+  onNavigate?: (view: string) => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ 
@@ -16,8 +19,8 @@ const Navbar: React.FC<NavbarProps> = ({
   onSignupClick, 
   onLoginClick, 
   onLogoutClick,
-  onGuideClick,
-  onProfileClick
+  onProfileClick,
+  onNavigate
 }) => {
   const [scrolled, setScrolled] = useState(false);
 
@@ -29,67 +32,99 @@ const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 사용자 요청에 맞춘 직관적인 메뉴명
+  const menuItems = [
+    { label: '경기 일정', view: 'schedule' },
+    { label: '기록/순위', view: 'stats' },
+    { label: '뉴스', view: 'news' },
+    { label: '티켓 예매', view: 'tickets' },
+    { label: '팀 찾기', view: 'findTeam' },
+    { label: '가이드', view: 'guide' },
+  ];
+
   return (
     <nav 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
-        scrolled ? 'bg-brand-dark/80 backdrop-blur-md border-white/10 py-4' : 'bg-transparent border-transparent py-6'
+        scrolled ? 'bg-brand-dark/95 backdrop-blur-xl border-white/10 py-3 shadow-2xl' : 'bg-transparent border-transparent py-5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-8 flex justify-between items-center">
         {/* Logo */}
         <div 
           onClick={onLogoClick}
-          className="flex items-center space-x-2 cursor-pointer group"
+          className="flex items-center space-x-3 cursor-pointer group"
         >
-          <div className="w-8 h-8 bg-gradient-to-tr from-brand-primary to-brand-accent rounded-lg flex items-center justify-center transition-transform group-hover:scale-110">
-            <span className="font-bold text-white text-xs">D</span>
+          <div className="w-9 h-9 bg-gradient-to-tr from-brand-primary to-brand-accent rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 shadow-lg shadow-cyan-500/20">
+            <span className="font-black text-white text-base italic">D</span>
           </div>
-          <span className="font-bold text-xl tracking-tight text-white">DUGOUT</span>
+          <span className="font-black text-xl md:text-2xl tracking-tighter text-white italic">DUGOUT</span>
         </div>
 
-        {/* Links */}
-        <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
-          <a href="#" className="hover:text-white transition-colors">데이터 분석</a>
-          <a href="#" className="hover:text-white transition-colors">AI 승부예측</a>
-          <button onClick={onGuideClick} className="hover:text-white transition-colors">가이드</button>
-          
-          <div className="h-4 w-[1px] bg-slate-700"></div>
-          
+        {/* Center Navigation (Desktop) - 접근성을 위해 간격 및 폰트 조정 */}
+        <div className="hidden xl:flex items-center gap-1 bg-white/5 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/5">
+           {menuItems.map((item) => (
+             <button
+               key={item.view}
+               onClick={() => onNavigate?.(item.view)}
+               className="px-5 py-2.5 rounded-full text-sm font-bold text-slate-400 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+             >
+               {item.label}
+             </button>
+           ))}
+        </div>
+
+        {/* Right Actions */}
+        <div className="flex items-center space-x-4">
           {user ? (
             /* Logged In View */
-            <div className="flex items-center space-x-6 animate-fade-in-up">
-               <div onClick={onProfileClick} className="flex items-center space-x-3 group cursor-pointer hover:bg-white/5 px-3 py-1.5 rounded-xl transition-all">
-                  {user.favoriteTeam && (
-                    <span className="hidden lg:block text-[10px] font-bold text-brand-accent bg-brand-accent/10 border border-brand-accent/20 px-2 py-0.5 rounded tracking-wide group-hover:bg-brand-accent group-hover:text-brand-dark transition-all">
-                      {user.favoriteTeam}
-                    </span>
-                  )}
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-accent to-brand-primary p-[1px]">
+            <div className="flex items-center space-x-3 animate-fade-in-up">
+               <div 
+                 onClick={onProfileClick} 
+                 className="hidden md:flex items-center space-x-3 group cursor-pointer hover:bg-white/5 px-3 py-1.5 rounded-full border border-transparent hover:border-white/10 transition-all"
+               >
+                  <div className="text-right mr-1">
+                    <span className="block text-white text-xs font-bold group-hover:text-brand-accent transition-colors">{user.nickname}</span>
+                    {user.favoriteTeam && (
+                      <span className="block text-[10px] text-slate-500 font-medium">{user.favoriteTeam}</span>
+                    )}
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-accent to-brand-primary p-[2px]">
                     <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center group-hover:bg-transparent transition-colors">
                       <span className="text-white font-bold text-xs">{user.nickname.substring(0, 1).toUpperCase()}</span>
                     </div>
                   </div>
-                  <span className="text-white font-semibold group-hover:text-brand-accent transition-colors">{user.nickname}님</span>
                </div>
+               
                <button 
                 onClick={onLogoutClick}
-                className="text-slate-400 hover:text-white transition-colors text-xs font-medium border border-white/10 px-3 py-1.5 rounded-lg hover:bg-white/5"
+                className="text-slate-400 hover:text-red-400 transition-colors p-2"
+                title="로그아웃"
                >
-                 로그아웃
+                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                </button>
             </div>
           ) : (
             /* Logged Out View */
-            <div className="flex items-center space-x-8 animate-fade-in-up">
-              <button onClick={onLoginClick} className="hover:text-white transition-colors">로그인</button>
+            <div className="flex items-center space-x-2 animate-fade-in-up">
+              <button 
+                onClick={onLoginClick} 
+                className="hidden md:block text-slate-300 hover:text-white font-bold text-sm px-4 py-2"
+              >
+                로그인
+              </button>
               <button 
                 onClick={onSignupClick}
-                className="bg-gradient-to-r from-brand-accent to-brand-primary hover:from-cyan-400 hover:to-blue-400 text-brand-dark font-bold px-5 py-2 rounded-full transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                className="bg-white text-brand-dark hover:bg-brand-accent hover:text-white font-black px-5 py-2.5 rounded-full transition-all transform hover:scale-105 shadow-lg text-xs md:text-sm"
               >
                 회원가입
               </button>
             </div>
           )}
+          
+          {/* Mobile Menu Icon (Visual Only for now) */}
+          <button className="xl:hidden p-2 text-slate-300">
+             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
         </div>
       </div>
     </nav>
