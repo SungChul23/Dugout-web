@@ -59,8 +59,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onFeatureClick }) => 
                 </h3>
               </div>
               
-              {/* Cards Grid */}
-              <div className="space-y-5">
+              {/* Cards Grid - Reduced Padding, Increased Text Size */}
+              <div className="space-y-4">
                 {FEATURES.filter(f => f.category === category).map((feature) => (
                   <div 
                     key={feature.id}
@@ -68,8 +68,8 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onFeatureClick }) => 
                     className={`
                       group relative overflow-hidden
                       bg-[#0a0f1e] border border-white/5 
-                      p-8 rounded-[1.5rem] transition-all duration-300 cursor-pointer
-                      flex flex-col justify-center min-h-[220px]
+                      p-6 rounded-[1.25rem] transition-all duration-300 cursor-pointer
+                      flex flex-col justify-center min-h-[160px]
                       ${config.glow} hover:-translate-y-1 hover:border-white/20 shadow-lg
                     `}
                   >
@@ -80,15 +80,15 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onFeatureClick }) => 
                     <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full transition-all duration-300 ${config.accent} opacity-0 group-hover:opacity-100 group-hover:h-2/3`}></div>
 
                     <div className="relative z-10">
-                      <div className="flex justify-between items-start mb-4">
-                        <h4 className="text-xl md:text-2xl font-bold text-slate-200 group-hover:text-white transition-colors duration-300">
+                      <div className="flex justify-between items-start mb-3">
+                        <h4 className="text-2xl md:text-3xl font-bold text-slate-200 group-hover:text-white transition-colors duration-300 tracking-tight">
                           {feature.title}
                         </h4>
                         <div className={`opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 ${config.color}`}>
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                         </div>
                       </div>
-                      <p className="text-base text-slate-500 leading-relaxed font-light group-hover:text-slate-300 transition-colors">
+                      <p className="text-lg text-slate-500 leading-snug font-light group-hover:text-slate-300 transition-colors">
                         {feature.description}
                       </p>
                     </div>

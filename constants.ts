@@ -1,5 +1,3 @@
-
-
 import { Team, Feature, TickerItem } from './types';
 
 export const TEAMS: Team[] = [
@@ -40,7 +38,7 @@ export const TEAMS: Team[] = [
     rank: 4, 
     winRate: 0.515, 
     gamesBehind: 9.0, 
-    color: '#1A1748', // 남색
+    color: '#4e7ad1', // 가독성을 위해 밝은 로얄 블루로 변경
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB004'
   },
   { 
@@ -80,7 +78,7 @@ export const TEAMS: Team[] = [
     rank: 8, 
     winRate: 0.465, 
     gamesBehind: 15.5, 
-    color: '#041E42', // 군청색
+    color: '#e65f4d', // 가독성을 위해 밝은 자이언츠 레드/오렌지로 변경
     ticketUrl: 'https://www.giantsclub.com/html/?pcode=339'
   },
   { 

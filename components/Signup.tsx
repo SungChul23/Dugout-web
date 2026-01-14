@@ -11,7 +11,7 @@ const KBO_TEAMS = [
 
 interface SignupProps {
   onCancel: () => void;
-  onLoginSuccess: (nickname: string, favoriteTeam: string) => void;
+  onLoginSuccess: (nickname: string, favoriteTeam: string, teamSlogan?: string) => void;
 }
 
 const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
@@ -20,7 +20,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
     email: '',
     password: '',
     confirmPassword: '',
-    favoriteTeam: '',
+    favoriteTeamName: '',
   });
 
   const [checkingId, setCheckingId] = useState(false);
@@ -75,7 +75,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
       setError('비밀번호가 일치하지 않습니다.');
       return;
     }
-    if (!formData.favoriteTeam) {
+    if (!formData.favoriteTeamName) {
       setError('선호 팀을 선택해주세요.');
       return;
     }
@@ -95,7 +95,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
           nickname: formData.nickname,
           email: formData.email,
           password: formData.password,
-          favoriteTeam: formData.favoriteTeam
+          favoriteTeamName: formData.favoriteTeamName
         })
       });
 
@@ -117,7 +117,8 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
         setLoading(false);
 
         // 사용자가 입력한 정보를 우선 사용하여 로그인 상태 업데이트 (서버 응답 불일치 방지)
-        onLoginSuccess(formData.nickname, formData.favoriteTeam);
+        // 응답 데이터에 teamSlogan이 있다면 사용
+        onLoginSuccess(formData.nickname, formData.favoriteTeamName, data.teamSlogan);
 
         onCancel(); 
       }, 500);
@@ -130,117 +131,117 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
   };
 
   return (
-    <div className="relative z-10 max-w-xl mx-auto px-6 py-12 animate-fade-in-up">
-      <div className="bg-[#0a0f1e]/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-12 shadow-[0_30px_60px_rgba(0,0,0,0.6)] relative">
+    <div className="relative z-10 max-w-2xl mx-auto px-6 py-16 animate-fade-in-up">
+      <div className="bg-[#0a0f1e]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 md:p-14 shadow-[0_40px_80px_rgba(0,0,0,0.7)] relative">
         
         {/* Top Close Button */}
         <button 
           onClick={onCancel}
-          className="absolute top-6 right-6 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
+          className="absolute top-8 right-8 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
           aria-label="닫기"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
             DUGOUT <span className="text-brand-accent font-light">Membership</span>
           </h2>
-          <p className="text-slate-400 text-sm font-light">
+          <p className="text-slate-400 text-base font-light">
             프로 수준의 데이터 분석과 예측, 지금 바로 시작하세요.
           </p>
         </div>
 
-        <form onSubmit={handleSignup} className="space-y-6">
+        <form onSubmit={handleSignup} className="space-y-8">
           {/* Nickname Field */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block ml-1">닉네임</label>
-            <div className="flex gap-3">
+          <div className="space-y-3">
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block ml-1">닉네임</label>
+            <div className="flex gap-4">
               <input
                 type="text"
                 name="nickname"
                 required
                 value={formData.nickname}
                 onChange={handleInputChange}
-                className="flex-1 bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all text-sm"
+                className="flex-1 bg-slate-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all text-base"
                 placeholder="사용하실 닉네임을 입력하세요"
               />
               <button
                 type="button"
                 onClick={checkNickname}
                 disabled={checkingId || !formData.nickname}
-                className="whitespace-nowrap bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-bold px-4 rounded-xl transition-all text-xs border border-white/5"
+                className="whitespace-nowrap bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-bold px-6 rounded-2xl transition-all text-sm border border-white/5"
               >
                 {checkingId ? '확인 중...' : '중복 확인'}
               </button>
             </div>
             {idAvailable === true && (
-              <p className="text-[10px] text-green-400 ml-1 flex items-center gap-1">
-                <span className="w-1 h-1 bg-green-400 rounded-full"></span>
+              <p className="text-xs text-green-400 ml-1 flex items-center gap-1 mt-1">
+                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
                 {nicknameMessage || '사용 가능한 닉네임입니다.'}
               </p>
             )}
             {idAvailable === false && (
-              <p className="text-[10px] text-red-400 ml-1 flex items-center gap-1">
-                <span className="w-1 h-1 bg-red-400 rounded-full"></span>
+              <p className="text-xs text-red-400 ml-1 flex items-center gap-1 mt-1">
+                <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
                 {nicknameMessage || '이미 사용 중인 닉네임입니다.'}
               </p>
             )}
           </div>
 
           {/* Email Field */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block ml-1">이메일</label>
+          <div className="space-y-3">
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block ml-1">이메일</label>
             <input
               type="email"
               name="email"
               required
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all text-sm"
+              className="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all text-base"
               placeholder="example@dugout.com"
             />
           </div>
 
           {/* Password Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block ml-1">비밀번호</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block ml-1">비밀번호</label>
               <input
                 type="password"
                 name="password"
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent transition-all text-sm"
+                className="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent transition-all text-base"
                 placeholder="8자 이상 입력"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block ml-1">비밀번호 확인</label>
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block ml-1">비밀번호 확인</label>
               <input
                 type="password"
                 name="confirmPassword"
                 required
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent transition-all text-sm"
+                className="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-slate-600 focus:outline-none focus:border-brand-accent transition-all text-base"
                 placeholder="비밀번호 재입력"
               />
             </div>
           </div>
 
           {/* Team Selection - Dropdown */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block ml-1">선호 구단</label>
+          <div className="space-y-3">
+            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block ml-1">선호 구단</label>
             <div className="relative">
               <select
-                name="favoriteTeam"
-                value={formData.favoriteTeam}
+                name="favoriteTeamName"
+                value={formData.favoriteTeamName}
                 onChange={handleInputChange}
-                className="w-full appearance-none bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all text-sm cursor-pointer"
+                className="w-full appearance-none bg-slate-900/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all text-base cursor-pointer"
               >
                 <option value="" disabled className="text-slate-500">응원하는 팀을 선택해주세요</option>
                 {KBO_TEAMS.map(team => (
@@ -249,8 +250,8 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-slate-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -259,7 +260,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-xs flex items-center gap-3">
+            <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-2xl text-red-400 text-sm flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
               {error}
             </div>
@@ -269,7 +270,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-brand-accent to-brand-primary hover:from-cyan-400 hover:to-blue-400 text-brand-dark font-black py-4 rounded-xl text-lg shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:transform-none"
+              className="w-full bg-gradient-to-r from-brand-accent to-brand-primary hover:from-cyan-400 hover:to-blue-400 text-brand-dark font-black py-5 rounded-2xl text-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:transform-none"
             >
               {loading ? '가입 및 로그인 처리 중...' : '회원가입 완료 (자동 로그인)'}
             </button>

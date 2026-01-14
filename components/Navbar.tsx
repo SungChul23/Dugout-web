@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 interface NavbarProps {
-  user?: { nickname: string; favoriteTeam?: string } | null;
+  user?: { nickname: string; favoriteTeam?: string; teamSlogan?: string } | null;
   onLogoClick?: () => void;
   onSignupClick?: () => void;
   onLoginClick?: () => void;
@@ -76,28 +76,33 @@ const Navbar: React.FC<NavbarProps> = ({
         {/* Right Actions */}
         <div className="flex items-center space-x-4">
           {user ? (
-            /* Logged In View */
-            <div className="flex items-center space-x-3 animate-fade-in-up">
+            /* Logged In View - Size Increased */
+            <div className="flex items-center space-x-4 animate-fade-in-up">
                <div 
                  onClick={onProfileClick} 
-                 className="hidden md:flex items-center space-x-3 group cursor-pointer hover:bg-white/5 px-3 py-1.5 rounded-full border border-transparent hover:border-white/10 transition-all"
+                 className="hidden md:flex items-center space-x-4 group cursor-pointer hover:bg-white/5 px-4 py-2 rounded-full border border-transparent hover:border-white/10 transition-all"
                >
                   <div className="text-right mr-1">
-                    <span className="block text-white text-xs font-bold group-hover:text-brand-accent transition-colors">{user.nickname}</span>
-                    {user.favoriteTeam && (
-                      <span className="block text-[10px] text-slate-500 font-medium">{user.favoriteTeam}</span>
-                    )}
+                    <span className="block text-white text-sm font-black group-hover:text-brand-accent transition-colors">{user.nickname}</span>
+                    <div className="flex flex-col items-end leading-tight">
+                      {user.favoriteTeam && (
+                        <span className="text-xs text-slate-400 font-bold mt-0.5">{user.favoriteTeam}</span>
+                      )}
+                      {user.teamSlogan && (
+                        <span className="text-[10px] text-brand-accent/90 font-serif italic tracking-wide mt-0.5">{user.teamSlogan}</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-accent to-brand-primary p-[2px]">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-accent to-brand-primary p-[2px] shadow-lg">
                     <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center group-hover:bg-transparent transition-colors">
-                      <span className="text-white font-bold text-xs">{user.nickname.substring(0, 1).toUpperCase()}</span>
+                      <span className="text-white font-black text-sm">{user.nickname.substring(0, 1).toUpperCase()}</span>
                     </div>
                   </div>
                </div>
                
                <button 
                 onClick={onLogoutClick}
-                className="text-slate-400 hover:text-red-400 transition-colors p-2"
+                className="text-slate-400 hover:text-red-400 transition-colors p-2 bg-white/5 hover:bg-white/10 rounded-full"
                 title="로그아웃"
                >
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>

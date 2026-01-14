@@ -18,6 +18,7 @@ import TeamPlayerStats from './components/TeamPlayerStats'; // New Import
 interface User {
   nickname: string;
   favoriteTeam?: string;
+  teamSlogan?: string; // 팀 슬로건 추가
 }
 
 function App() {
@@ -69,21 +70,16 @@ function App() {
     else alert('해당 기능은 준비 중입니다.');
   };
 
-  const handleLoginSuccess = (nickname: string, favoriteTeam: string) => {
-    setUser({ nickname, favoriteTeam });
+  const handleLoginSuccess = (nickname: string, favoriteTeam: string, teamSlogan?: string) => {
+    setUser({ nickname, favoriteTeam, teamSlogan });
     setView('home');
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    setUser(null);
-    setView('home');
-    alert('로그아웃 되었습니다.');
-  };
-
-  const handleUpdateTeam = (newTeam: string) => {
-    if (user) {
-      setUser({ ...user, favoriteTeam: newTeam });
+    if (window.confirm('정말 로그아웃 하시겠습니까?')) {
+      localStorage.removeItem('accessToken');
+      setUser(null);
+      setView('home');
     }
   };
 
@@ -107,7 +103,8 @@ function App() {
       <main className="relative pt-24 pb-12 overflow-hidden min-h-[calc(100vh-80px)]">
         {view === 'home' && (
           <div className="animate-fade-in-up">
-            <div className="relative z-10 text-center px-4 mb-8">
+            {/* 상단 간격 pt-32로 증가 */}
+            <div className="relative z-10 text-center px-4 mb-8 pt-8 md:pt-16">
               <div className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-3 py-1 mb-6 backdrop-blur-sm">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 <span className="text-[10px] md:text-xs font-mono text-slate-300">2026 KBO 시즌 데이터 업데이트 완료</span>
@@ -163,7 +160,6 @@ function App() {
           <MyDashboard 
             user={user} 
             onFindTeamClick={() => handleFeatureClick('8')} 
-            onUpdateTeam={handleUpdateTeam}
           />
         )}
       </main>
