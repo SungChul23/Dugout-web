@@ -13,21 +13,23 @@ import KboNews from './components/KboNews';
 import MyDashboard from './components/MyDashboard'; 
 import FindMyTeam from './components/FindMyTeam';
 import GameSchedule from './components/GameSchedule';
-import TeamPlayerStats from './components/TeamPlayerStats'; // New Import
+import TeamPlayerStats from './components/TeamPlayerStats';
+import PlayerPrediction from './components/PlayerPrediction'; // New Import
 
 interface User {
   nickname: string;
   favoriteTeam?: string;
-  teamSlogan?: string; // 팀 슬로건 추가
+  teamSlogan?: string;
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats'>('home');
+  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction'>('home');
   const [user, setUser] = useState<User | null>(null);
 
   const navigateToHome = () => setView('home');
   const navigateToSignup = () => setView('signup');
   const navigateToLogin = () => setView('login');
+  
   const navigateToDashboard = () => {
     if (user) {
       setView('dashboard');
@@ -39,10 +41,16 @@ function App() {
   
   // 통합 네비게이션 핸들러
   const handleMenuClick = (targetView: string) => {
-    // 뷰 타입 캐스팅
     const v = targetView as any;
     
-    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home'].includes(v)) {
+    // 로그인 필요한 페이지 체크
+    if (['prediction', 'dashboard'].includes(v) && !user) {
+       alert('로그인이 필요한 서비스입니다.');
+       navigateToLogin();
+       return;
+    }
+
+    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home', 'prediction'].includes(v)) {
       setView(v);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -54,13 +62,13 @@ function App() {
     if (id === '1') handleMenuClick('stats');
     else if (id === '2') handleMenuClick('schedule');
     else if (id === '3') handleMenuClick('news');
+    else if (id === '4') handleMenuClick('prediction'); // ID 4: 선수 미래 성적 예측
     else if (id === '7') handleMenuClick('tickets');
     else if (id === '8') handleMenuClick('findTeam');
     else if (id === '9') handleMenuClick('guide');
-    // AI 예측 관련 기능 (ID 4, 5, 6)
-    else if (['4', '5', '6'].includes(id)) {
+    // 기타 AI 기능
+    else if (['5', '6'].includes(id)) {
       if (user) {
-        // 로그인한 유저는 대시보드로 안내 (거기에 일부 AI 기능 존재)
         handleMenuClick('dashboard');
       } else {
         alert('이 기능은 회원 전용 AI 서비스입니다. 로그인 후 대시보드에서 확인해주세요.');
@@ -103,7 +111,6 @@ function App() {
       <main className="relative pt-24 pb-12 overflow-hidden min-h-[calc(100vh-80px)]">
         {view === 'home' && (
           <div className="animate-fade-in-up">
-            {/* 상단 간격 pt-32로 증가 */}
             <div className="relative z-10 text-center px-4 mb-8 pt-8 md:pt-16">
               <div className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-3 py-1 mb-6 backdrop-blur-sm">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
@@ -156,6 +163,7 @@ function App() {
         {view === 'findTeam' && <FindMyTeam onCancel={navigateToHome} />}
         {view === 'schedule' && <GameSchedule onCancel={navigateToHome} user={user} />}
         {view === 'stats' && <TeamPlayerStats onCancel={navigateToHome} />}
+        {view === 'prediction' && <PlayerPrediction onCancel={navigateToHome} user={user} />}
         {view === 'dashboard' && user && (
           <MyDashboard 
             user={user} 
