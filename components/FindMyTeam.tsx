@@ -446,19 +446,19 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
           {/* Badge: Pink + Mint Gradient */}
           <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500/10 to-cyan-400/10 border border-pink-500/20 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm">
              <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
-             <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400 uppercase tracking-widest">
+             <span className="text-xs md:text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400 uppercase tracking-widest">
                Fan Experience Center
              </span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
             FIND YOUR<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400">
               DESTINY TEAM
             </span>
           </h1>
           
-          <p className="text-lg text-slate-400 mb-12 leading-relaxed">
+          <p className="text-xl md:text-2xl text-slate-400 mb-12 leading-relaxed">
             아직 내 팀을 못 찾으셨나요?<br/>
             <span className="text-cyan-400 font-bold">DUGOUT</span>의 데이터가 당신의 취향을 분석해<br/>
             운명적인 KBO 구단을 매칭해드립니다.

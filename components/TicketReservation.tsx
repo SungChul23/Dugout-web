@@ -31,17 +31,17 @@ const TicketReservation: React.FC<TicketReservationProps> = ({ onCancel }) => {
     <div className="relative z-10 w-full animate-fade-in-up">
       <div className="max-w-7xl mx-auto px-6 py-12">
         
-        {/* Header Section */}
-        <div className="flex justify-between items-end mb-12 relative">
+        {/* Header Section - Font Sizes Increased */}
+        <div className="flex justify-between items-end mb-16 relative">
           <div>
-            <div className="inline-flex items-center space-x-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-3 py-1 mb-4 backdrop-blur-sm">
+            <div className="inline-flex items-center space-x-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
                <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
-               <span className="text-[10px] md:text-xs font-mono text-pink-300">2026 Season Ticket Center</span>
+               <span className="text-xs md:text-sm font-mono text-pink-300 font-bold uppercase tracking-widest">2026 Season Ticket Center</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">
+            <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 leading-tight">
               KBO Ticket <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">Reservation</span>
             </h2>
-            <p className="text-slate-400 text-lg font-light">
+            <p className="text-slate-400 text-xl md:text-2xl font-light leading-relaxed max-w-3xl">
               10개 구단의 홈 경기장 정보와 예매처 바로가기
             </p>
           </div>
@@ -49,19 +49,19 @@ const TicketReservation: React.FC<TicketReservationProps> = ({ onCancel }) => {
           {/* Close Button */}
           <button 
             onClick={onCancel}
-            className="hidden md:flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+            className="hidden md:flex items-center gap-3 text-slate-400 hover:text-white transition-colors group px-6 py-4 rounded-2xl hover:bg-white/5"
           >
-            <span className="text-sm font-bold uppercase tracking-widest group-hover:mr-2 transition-all">Back to Home</span>
-            <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white/10">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <span className="text-base font-bold uppercase tracking-widest group-hover:mr-2 transition-all">Back to Home</span>
+            <div className="w-12 h-12 rounded-full border-2 border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/30">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
           </button>
         </div>
 
         {/* Teams Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {TEAMS.map((team) => {
             const info = TEAM_INFO[team.name] || { krName: team.name, stadium: '경기장 정보 없음' };
             const vendor = getVendorInfo(team.ticketUrl);
@@ -72,7 +72,7 @@ const TicketReservation: React.FC<TicketReservationProps> = ({ onCancel }) => {
                 href={team.ticketUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="group relative block bg-[#0a0f1e] border border-white/5 rounded-2xl overflow-hidden hover:-translate-y-2 transition-all duration-300 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] flex flex-col h-full"
+                className="group relative block bg-[#0a0f1e] border border-white/5 rounded-3xl overflow-hidden hover:-translate-y-2 transition-all duration-300 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] flex flex-col h-full"
               >
                 {/* Background Glow based on Team Color */}
                 <div 
@@ -80,40 +80,40 @@ const TicketReservation: React.FC<TicketReservationProps> = ({ onCancel }) => {
                   style={{ backgroundColor: team.color }}
                 ></div>
 
-                <div className="p-6 relative z-10 flex flex-col h-full">
+                <div className="p-8 relative z-10 flex flex-col h-full">
                   {/* Top Bar: Color Line & Icon */}
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="w-16 h-1.5 rounded-full" style={{ backgroundColor: team.color }}></div>
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="w-20 h-2 rounded-full" style={{ backgroundColor: team.color }}></div>
                     <div className="text-slate-600 group-hover:text-white transition-colors">
-                      <svg className="w-5 h-5 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                       </svg>
                     </div>
                   </div>
 
                   {/* Team Info */}
-                  <div className="mb-4 flex-1">
-                     <h3 className="text-3xl font-black text-white tracking-tighter mb-2 leading-none">
+                  <div className="mb-6 flex-1">
+                     <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-3 leading-none">
                        {info.krName}
                      </h3>
                      <div className="flex items-center gap-2 text-slate-400 group-hover:text-slate-200 transition-colors">
-                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                       <span className="text-sm font-medium">{info.stadium}</span>
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                       <span className="text-base font-medium">{info.stadium}</span>
                      </div>
                   </div>
 
                   {/* Vendor Badge & Link */}
                   <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-between group-hover:border-white/20 transition-colors">
-                    <div className={`px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg ${vendor.color} flex items-center gap-2`}>
+                    <div className={`px-4 py-2 rounded-xl text-sm font-bold text-white shadow-lg ${vendor.color} flex items-center gap-2`}>
                       {/* Vendor Icon */}
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
                       {vendor.name}
                     </div>
                     
                     <div 
-                      className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-brand-dark text-slate-500 bg-white/5"
+                      className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-brand-dark text-slate-500 bg-white/5"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>

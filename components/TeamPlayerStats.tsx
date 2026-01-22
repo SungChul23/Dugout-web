@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { TEAMS } from '../constants';
 
@@ -523,63 +522,63 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
     <div className="relative z-10 w-full animate-fade-in-up min-h-screen pb-20">
       <div className="w-[95%] max-w-[1600px] mx-auto px-4 md:px-8 py-12">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 border-b border-white/5 pb-8">
+        {/* Header - Font Size Increased */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 border-b border-white/5 pb-8">
           <div>
-            <div className="inline-flex items-center space-x-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-3 py-1 mb-4 backdrop-blur-sm">
+            <div className="inline-flex items-center space-x-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-               <span className="text-[10px] md:text-xs font-mono text-cyan-400">2026 Season Analytics Center</span>
+               <span className="text-xs md:text-sm font-mono text-cyan-400 font-bold uppercase tracking-widest">2026 Season Analytics Center</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-2">
+            <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 leading-tight">
               KBO <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">STATS & RANKING</span>
             </h2>
-            <p className="text-slate-400 text-lg font-light">
+            <p className="text-slate-400 text-xl md:text-2xl font-light leading-relaxed">
               실제 데이터와 <span className="text-white font-bold">더그아웃</span>이 예측한 미래 순위의 정밀 분석
             </p>
           </div>
           <button 
             onClick={onCancel}
-            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors border border-white/10 px-6 py-3 rounded-xl hover:bg-white/5 bg-[#0a0f1e]"
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors border border-white/10 px-8 py-4 rounded-2xl hover:bg-white/5 bg-[#0a0f1e]"
           >
-            <span className="text-sm font-bold">메인으로</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            <span className="text-base font-bold">메인으로</span>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
         {/* SECTION 1: RANKING COMPARISON */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 mb-20">
           
-          {/* Actual Ranking */}
-          <div className="bg-[#0a0f1e]/80 border border-white/10 rounded-3xl p-6 md:p-8">
-            <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
-              <span className="w-1.5 h-6 bg-slate-500 rounded-full"></span>
+          {/* Actual Ranking - Larger Padding & Text */}
+          <div className="bg-[#0a0f1e]/80 border border-white/10 rounded-[2.5rem] p-8 md:p-10">
+            <h3 className="text-3xl font-black text-white mb-8 flex items-center gap-4">
+              <span className="w-2 h-8 bg-slate-500 rounded-full"></span>
               2026 KBO 정규리그 순위
             </h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-slate-500 uppercase font-bold border-b border-white/5">
+              <table className="w-full text-left">
+                <thead className="text-slate-500 uppercase font-bold border-b border-white/5 text-base">
                   <tr>
-                    <th className="px-4 py-3">Rank</th>
-                    <th className="px-4 py-3">Team</th>
-                    <th className="px-4 py-3">G</th>
-                    <th className="px-4 py-3">W-D-L</th>
-                    <th className="px-4 py-3 text-cyan-400">Win Rate</th>
-                    <th className="px-4 py-3">GB</th>
+                    <th className="px-4 py-4">Rank</th>
+                    <th className="px-4 py-4">Team</th>
+                    <th className="px-4 py-4">G</th>
+                    <th className="px-4 py-4">W-D-L</th>
+                    <th className="px-4 py-4 text-cyan-400">Win Rate</th>
+                    <th className="px-4 py-4">GB</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-white/5 text-lg">
                   {ACTUAL_RANKING.map((team) => (
                     <tr key={team.name} className="hover:bg-white/5 transition-colors">
-                      <td className="px-4 py-3 font-mono font-bold text-slate-300">
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded ${team.rank <= 5 ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-500'}`}>
+                      <td className="px-4 py-4 font-mono font-bold text-slate-300">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg ${team.rank <= 5 ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-500'}`}>
                           {team.rank}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-bold text-white text-lg">{team.name}</td>
-                      <td className="px-4 py-3 text-slate-400">{team.played}</td>
-                      <td className="px-4 py-3 text-slate-400">{team.win}-{team.draw}-{team.loss}</td>
-                      <td className="px-4 py-3 font-mono font-bold text-cyan-400 text-lg">{team.winRate}</td>
-                      <td className="px-4 py-3 text-slate-500">{team.gameBehind}</td>
+                      <td className="px-4 py-4 font-bold text-white text-xl">{team.name}</td>
+                      <td className="px-4 py-4 text-slate-400">{team.played}</td>
+                      <td className="px-4 py-4 text-slate-400">{team.win}-{team.draw}-{team.loss}</td>
+                      <td className="px-4 py-4 font-mono font-bold text-cyan-400 text-xl">{team.winRate}</td>
+                      <td className="px-4 py-4 text-slate-500">{team.gameBehind}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -587,48 +586,48 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
             </div>
           </div>
 
-          {/* AI Predicted Ranking */}
-          <div className="bg-gradient-to-br from-[#0f172a] to-[#1e1b4b] border border-cyan-500/30 rounded-3xl p-6 md:p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+          {/* AI Predicted Ranking - Larger Padding & Text */}
+          <div className="bg-gradient-to-br from-[#0f172a] to-[#1e1b4b] border border-cyan-500/30 rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
             
-            <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 relative z-10">
-              <span className="w-1.5 h-6 bg-cyan-400 rounded-full animate-pulse"></span>
+            <h3 className="text-3xl font-black text-white mb-8 flex items-center gap-4 relative z-10">
+              <span className="w-2 h-8 bg-cyan-400 rounded-full animate-pulse"></span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
                 DUGOUT Predicted Final Ranking
               </span>
             </h3>
             <div className="overflow-x-auto relative z-10">
-              <table className="w-full text-sm text-left">
-                <thead className="text-blue-300/70 uppercase font-bold border-b border-white/5">
+              <table className="w-full text-left">
+                <thead className="text-blue-300/70 uppercase font-bold border-b border-white/5 text-base">
                   <tr>
-                    <th className="px-4 py-3">Pred Rank</th>
-                    <th className="px-4 py-3">Team</th>
-                    <th className="px-4 py-3">Trend</th>
-                    <th className="px-4 py-3">Analysis Comment</th>
-                    <th className="px-4 py-3 text-right">Probability</th>
+                    <th className="px-4 py-4">Pred Rank</th>
+                    <th className="px-4 py-4">Team</th>
+                    <th className="px-4 py-4">Trend</th>
+                    <th className="px-4 py-4">Analysis Comment</th>
+                    <th className="px-4 py-4 text-right">Probability</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-white/5 text-lg">
                   {PREDICTED_RANKING.map((team) => (
                     <tr key={team.name} className="hover:bg-white/5 transition-colors group">
-                      <td className="px-4 py-3 font-mono font-bold text-white">
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded ${team.rank === 1 ? 'bg-yellow-500 text-black' : team.rank <= 5 ? 'bg-blue-600 text-white' : 'bg-transparent text-blue-400'}`}>
+                      <td className="px-4 py-4 font-mono font-bold text-white">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg ${team.rank === 1 ? 'bg-yellow-500 text-black' : team.rank <= 5 ? 'bg-blue-600 text-white' : 'bg-transparent text-blue-400'}`}>
                           {team.rank}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-bold text-blue-100 text-lg">{team.name}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-4 font-bold text-blue-100 text-xl">{team.name}</td>
+                      <td className="px-4 py-4">
                         {team.change === 'up' && <span className="text-red-400 flex items-center gap-1 font-bold">▲ {team.changeVal}</span>}
                         {team.change === 'down' && <span className="text-blue-400 flex items-center gap-1 font-bold">▼ {team.changeVal}</span>}
                         {team.change === 'same' && <span className="text-slate-500">-</span>}
                       </td>
-                      <td className="px-4 py-3 text-blue-200 text-xs">{team.comment}</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <div className="w-16 h-1 bg-slate-700 rounded-full overflow-hidden">
+                      <td className="px-4 py-4 text-blue-200 text-base">{team.comment}</td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                             <div className="h-full bg-cyan-400" style={{ width: `${team.probability}%` }}></div>
                           </div>
-                          <span className="font-mono text-cyan-400">{team.probability}%</span>
+                          <span className="font-mono text-cyan-400 font-bold">{team.probability}%</span>
                         </div>
                       </td>
                     </tr>
@@ -640,79 +639,79 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
         </div>
 
         {/* SECTION 2: STATS TABS with Maniac Mode Toggle */}
-        <div className="mb-12 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/10 pb-4">
-           {/* Tabs */}
+        <div className="mb-12 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/10 pb-6">
+           {/* Tabs - Larger */}
            <div className="flex flex-wrap gap-4">
               <button 
                 onClick={() => setActiveTab('team')}
-                className={`px-6 py-2 rounded-xl text-lg font-bold transition-all ${activeTab === 'team' ? 'bg-white text-black' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                className={`px-8 py-3 rounded-2xl text-xl font-black transition-all ${activeTab === 'team' ? 'bg-white text-black' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
               >
                 팀 기록
               </button>
               <button 
                 onClick={() => setActiveTab('batter')}
-                className={`px-6 py-2 rounded-xl text-lg font-bold transition-all ${activeTab === 'batter' ? 'bg-pink-500 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                className={`px-8 py-3 rounded-2xl text-xl font-black transition-all ${activeTab === 'batter' ? 'bg-pink-500 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
               >
                 타자 기록
               </button>
               <button 
                 onClick={() => setActiveTab('pitcher')}
-                className={`px-6 py-2 rounded-xl text-lg font-bold transition-all ${activeTab === 'pitcher' ? 'bg-cyan-500 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                className={`px-8 py-3 rounded-2xl text-xl font-black transition-all ${activeTab === 'pitcher' ? 'bg-cyan-500 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
               >
                 투수 기록
               </button>
            </div>
 
-           {/* Maniac Mode Toggle */}
-           <div className="flex items-center gap-3 bg-gradient-to-r from-slate-900 to-black border border-white/10 px-5 py-2 rounded-full shadow-lg">
-              <span className="text-xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline-block">
+           {/* Maniac Mode Toggle - Increased Size & Text */}
+           <div className="flex items-center gap-4 bg-gradient-to-r from-slate-900 to-black border border-white/10 px-6 py-3 rounded-full shadow-lg">
+              <span className="text-base md:text-lg text-slate-400 font-bold whitespace-nowrap hidden sm:inline-block">
                 {isAdvanced ? "🤓 야구 좀 보시네요! 심화 분석 중" : "🤔 진짜 야구팬은 숫자의 깊이를 봅니다"}
               </span>
               <button 
                 onClick={() => setIsAdvanced(!isAdvanced)}
-                className={`relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none ${isAdvanced ? 'bg-brand-accent' : 'bg-slate-700'}`}
+                className={`relative w-14 h-8 rounded-full transition-colors duration-300 focus:outline-none ${isAdvanced ? 'bg-brand-accent' : 'bg-slate-700'}`}
               >
-                 <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 shadow-sm ${isAdvanced ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                 <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 shadow-sm ${isAdvanced ? 'translate-x-6' : 'translate-x-0'}`}></div>
               </button>
-              <span className={`text-xs font-black tracking-wider ${isAdvanced ? 'text-brand-accent' : 'text-slate-500'}`}>
+              <span className={`text-sm md:text-base font-black tracking-wider ${isAdvanced ? 'text-brand-accent' : 'text-slate-500'}`}>
                 {isAdvanced ? 'MANIAC ON' : 'OFF'}
               </span>
            </div>
         </div>
 
         {/* STATS CONTENT: RANKING CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
           {getActiveMetrics().map((metric) => (
-            <div key={metric.key} className="bg-[#0a0f1e] border border-white/10 rounded-[2rem] overflow-hidden flex flex-col shadow-lg hover:border-white/20 transition-all duration-300">
+            <div key={metric.key} className="bg-[#0a0f1e] border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col shadow-lg hover:border-white/20 transition-all duration-300 group hover:-translate-y-2">
               {/* Header */}
-              <div className="px-6 py-5 border-b border-white/5 bg-white/5 flex items-center justify-between">
-                <h4 className={`text-xl font-bold ${activeTab === 'batter' ? 'text-pink-500' : activeTab === 'pitcher' ? 'text-cyan-400' : 'text-white'}`}>{metric.title}</h4>
-                <div className="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded border border-white/5 font-bold">TOP 5</div>
+              <div className="px-8 py-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                <h4 className={`text-2xl font-black ${activeTab === 'batter' ? 'text-pink-500' : activeTab === 'pitcher' ? 'text-cyan-400' : 'text-white'}`}>{metric.title}</h4>
+                <div className="text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg border border-white/5 font-bold">TOP 5</div>
               </div>
 
-              {/* 1st Place - Hero Section */}
-              <div className="p-6 flex items-center justify-between relative overflow-hidden">
+              {/* 1st Place - Hero Section Larger */}
+              <div className="p-8 flex items-center justify-between relative overflow-hidden">
                 {/* Background Glow */}
                 <div 
-                  className="absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-10 blur-2xl" 
+                  className="absolute -right-6 -top-6 w-40 h-40 rounded-full opacity-10 blur-2xl" 
                   style={{ backgroundColor: getTeamColor(metric.items[0].teamCode) }}
                 ></div>
 
                 <div className="flex flex-col items-start z-10">
-                   <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-black font-black text-sm shadow-lg shadow-yellow-500/20">1</div>
-                      <span className="text-3xl font-black text-white">{metric.items[0].value}<span className="text-base font-normal text-slate-400 ml-1">{metric.items[0].unit}</span></span>
+                   <div className="flex items-center gap-4 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-black font-black text-lg shadow-lg shadow-yellow-500/20">1</div>
+                      <span className="text-4xl md:text-5xl font-black text-white tracking-tight">{metric.items[0].value}<span className="text-xl font-bold text-slate-400 ml-1.5">{metric.items[0].unit}</span></span>
                    </div>
                    <div className="flex flex-col">
-                      <span className="text-lg font-bold text-slate-200">{metric.items[0].name}</span>
-                      {metric.items[0].subInfo && <span className="text-sm text-slate-500">{metric.items[0].subInfo}</span>}
+                      <span className="text-2xl font-bold text-slate-200">{metric.items[0].name}</span>
+                      {metric.items[0].subInfo && <span className="text-lg text-slate-500 font-medium">{metric.items[0].subInfo}</span>}
                    </div>
                 </div>
 
-                {/* Team Logo / Symbol */}
+                {/* Team Logo / Symbol - Larger */}
                 <div className="z-10">
                    <div 
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-black text-white shadow-2xl border-2 border-white/10"
+                      className="w-20 h-20 rounded-3xl flex items-center justify-center text-2xl font-black text-white shadow-2xl border-2 border-white/10"
                       style={{ backgroundColor: getTeamColor(metric.items[0].teamCode) }}
                    >
                      {metric.items[0].teamCode || metric.items[0].name.substring(0, 2)}
@@ -720,21 +719,21 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
                 </div>
               </div>
 
-              {/* 2nd ~ 5th Place - List */}
+              {/* 2nd ~ 5th Place - List Larger */}
               <div className="flex-1 bg-[#0f1629]">
                  {metric.items.slice(1).map((item) => (
-                   <div key={item.rank} className="flex items-center justify-between px-6 py-4 border-t border-white/5 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center gap-4">
-                         <span className="text-slate-500 font-mono font-bold w-4">{item.rank}</span>
-                         <div className="flex items-center gap-3">
-                            <div className="w-2 h-8 rounded-full" style={{ backgroundColor: getTeamColor(item.teamCode) }}></div>
+                   <div key={item.rank} className="flex items-center justify-between px-8 py-5 border-t border-white/5 hover:bg-white/5 transition-colors">
+                      <div className="flex items-center gap-5">
+                         <span className="text-slate-500 font-mono font-bold w-6 text-lg">{item.rank}</span>
+                         <div className="flex items-center gap-4">
+                            <div className="w-2 h-10 rounded-full" style={{ backgroundColor: getTeamColor(item.teamCode) }}></div>
                             <div className="flex flex-col">
-                               <span className="text-base font-bold text-slate-300">{item.name}</span>
-                               {item.subInfo && <span className="text-xs text-slate-500">{item.subInfo}</span>}
+                               <span className="text-lg font-bold text-slate-300">{item.name}</span>
+                               {item.subInfo && <span className="text-sm text-slate-500">{item.subInfo}</span>}
                             </div>
                          </div>
                       </div>
-                      <span className="text-lg font-mono font-bold text-white">{item.value}<span className="text-xs font-normal text-slate-500 ml-1">{item.unit}</span></span>
+                      <span className="text-xl font-mono font-bold text-white">{item.value}<span className="text-sm font-normal text-slate-500 ml-1">{item.unit}</span></span>
                    </div>
                  ))}
               </div>

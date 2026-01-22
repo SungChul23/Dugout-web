@@ -123,26 +123,26 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
       {/* WIDER CONTAINER: max-w-[90%] or max-w-[1600px] */}
       <div className="w-[95%] max-w-[1600px] mx-auto px-4 md:px-8 py-12">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 border-b border-white/5 pb-8">
+        {/* Header Section - Font Size Increased */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 border-b border-white/5 pb-8">
           <div>
-            <div className="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-3 py-1 mb-4 backdrop-blur-sm">
+            <div className="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-               <span className="text-[10px] md:text-xs font-mono text-blue-300">2026 Season Official Schedule</span>
+               <span className="text-xs md:text-sm font-mono text-blue-300 font-bold uppercase tracking-widest">2026 Season Official Schedule</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-2">
+            <h2 className="text-5xl md:text-7xl font-black text-white tracking-tight mb-4 leading-tight">
               KBO <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">MATCH CENTER</span>
             </h2>
-            <p className="text-slate-400 text-lg font-light">
+            <p className="text-slate-400 text-xl md:text-2xl font-light">
               2026 시즌 정규리그 전 경기 일정 및 결과
             </p>
           </div>
           <button 
             onClick={onCancel}
-            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors border border-white/10 px-6 py-3 rounded-xl hover:bg-white/5 bg-[#0a0f1e]"
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors border border-white/10 px-8 py-4 rounded-2xl hover:bg-white/5 bg-[#0a0f1e]"
           >
-            <span className="text-sm font-bold">메인으로</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            <span className="text-base font-bold">메인으로</span>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 

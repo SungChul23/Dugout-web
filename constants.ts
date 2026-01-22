@@ -1,3 +1,4 @@
+
 import { Team, Feature, TickerItem } from './types';
 
 export const TEAMS: Team[] = [
@@ -8,7 +9,7 @@ export const TEAMS: Team[] = [
     rank: 1, 
     winRate: 0.612, 
     gamesBehind: 0.0, 
-    color: '#ff1a1a', // 시인성을 위해 밝게 조정됨
+    color: '#EA0029', // KIA Red (요청: #EA0029)
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/58'
   },
   { 
@@ -18,7 +19,7 @@ export const TEAMS: Team[] = [
     rank: 2, 
     winRate: 0.543, 
     gamesBehind: 5.5, 
-    color: '#3399ff',
+    color: '#2965CC', // Samsung Blue (요청: #074CA1 -> 네온/가시성 위해 밝게 조정)
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/57'
   },
   { 
@@ -28,7 +29,7 @@ export const TEAMS: Team[] = [
     rank: 3, 
     winRate: 0.528, 
     gamesBehind: 7.5, 
-    color: '#ff1a8c',
+    color: '#C30452', // LG Magenta (요청: #C30452)
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/59'
   },
   { 
@@ -38,7 +39,7 @@ export const TEAMS: Team[] = [
     rank: 4, 
     winRate: 0.515, 
     gamesBehind: 9.0, 
-    color: '#4e7ad1', // 가독성을 위해 밝은 로얄 블루로 변경
+    color: '#3E3A85', // Doosan Navy (요청: #1A1748 -> 네온/가시성 위해 밝게 조정)
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB004'
   },
   { 
@@ -48,7 +49,7 @@ export const TEAMS: Team[] = [
     rank: 5, 
     winRate: 0.493, 
     gamesBehind: 12.0, 
-    color: '#f5f5f5', // 메탈릭 화이트
+    color: '#D1D1D1', // KT Black+White Mix (요청: #000000 + 흰색 믹스 -> 실버/화이트 네온)
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/62'
   },
   { 
@@ -58,7 +59,7 @@ export const TEAMS: Team[] = [
     rank: 6, 
     winRate: 0.489, 
     gamesBehind: 12.5, 
-    color: '#ff4d4d',
+    color: '#CE0E2D', // SSG Red (요청: #CE0E2D)
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/476'
   },
   { 
@@ -68,7 +69,7 @@ export const TEAMS: Team[] = [
     rank: 7, 
     winRate: 0.470, 
     gamesBehind: 15.0, 
-    color: '#ff8c1a',
+    color: '#FC4E00', // Hanwha Orange (요청: #FC4E00)
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/63'
   },
   { 
@@ -78,7 +79,7 @@ export const TEAMS: Team[] = [
     rank: 8, 
     winRate: 0.465, 
     gamesBehind: 15.5, 
-    color: '#e65f4d', // 가독성을 위해 밝은 자이언츠 레드/오렌지로 변경
+    color: '#20386B', // Lotte Navy (요청: #041E42 -> 네온/가시성 위해 밝게 조정)
     ticketUrl: 'https://www.giantsclub.com/html/?pcode=339'
   },
   { 
@@ -88,7 +89,7 @@ export const TEAMS: Team[] = [
     rank: 9, 
     winRate: 0.450, 
     gamesBehind: 17.5, 
-    color: '#315288', // 마린블루
+    color: '#4D73AB', // NC Marine Blue (요청: #315288 -> 네온/가시성 위해 밝게 조정)
     ticketUrl: 'https://www.ncdinos.com/homepage.do'
   },
   { 
@@ -98,7 +99,7 @@ export const TEAMS: Team[] = [
     rank: 10, 
     winRate: 0.415, 
     gamesBehind: 22.0, 
-    color: '#570514', // 버건디
+    color: '#8B0920', // Kiwoom Burgundy (요청: #570514 -> 네온/가시성 위해 밝게 조정)
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB003'
   },
 ];

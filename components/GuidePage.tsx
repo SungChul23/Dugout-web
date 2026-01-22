@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 // --- TERMINOLOGY DATA ---
@@ -373,17 +374,17 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
     <div className="relative z-10 w-full animate-fade-in-up pb-24">
       <div className="max-w-7xl mx-auto px-6 py-12">
         
-        {/* Top Header */}
+        {/* Top Header - Font Size Increased */}
         <div className="flex justify-between items-end mb-16">
           <div>
-            <div className="inline-flex items-center space-x-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-3 py-1 mb-4 backdrop-blur-sm">
+            <div className="inline-flex items-center space-x-2 bg-pink-500/10 border border-pink-500/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
                <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
-               <span className="text-[10px] md:text-xs font-mono text-pink-300">DUGOUT Data & Rule Guide</span>
+               <span className="text-xs md:text-sm font-mono text-pink-300 font-bold uppercase tracking-widest">DUGOUT Data & Rule Guide</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tight mb-4 uppercase italic leading-none">
+            <h2 className="text-6xl md:text-8xl font-black text-white tracking-tight mb-4 uppercase italic leading-none">
               BASEBALL <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">ENCYCLOPEDIA</span>
             </h2>
-            <p className="text-slate-400 text-xl font-light max-w-3xl leading-relaxed">
+            <p className="text-slate-400 text-2xl md:text-3xl font-light max-w-4xl leading-relaxed">
               데이터와 규칙을 알면 야구가 더 재미있어집니다. 10개 구단 모든 팬들을 위한 완벽 가이드.
             </p>
           </div>

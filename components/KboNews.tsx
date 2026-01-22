@@ -1,21 +1,20 @@
 
-
 import React, { useState, useEffect } from 'react';
 
 const API_BASE_URL = "https://dugout.cloud";
 
 const NEWS_CATEGORIES = [
-  { id: 'KIA 타이거즈', color: '#ff1a1a' }, // 밝은 레드
-  { id: '삼성 라이온즈', color: '#3399ff' }, // 밝은 블루
-  { id: 'LG 트윈스', color: '#ff1a8c' }, // 핫핑크
-  { id: '두산 베어스', color: '#1A1748' }, // 남색
-  { id: 'KT 위즈', color: '#f5f5f5' },      // 밝은 실버/화이트 (수정됨)
-  { id: 'SSG 랜더스', color: '#ff4d4d' }, // 밝은 레드
-  { id: '한화 이글스', color: '#ff8c1a' }, // 밝은 오렌지
-  { id: '롯데 자이언츠', color: '#041E42' }, // 군청색
-  { id: 'NC 다이노스', color: '#315288' }, // 마린블루
-  { id: '키움 히어로즈', color: '#570514' }, // 버건디
-  { id: '메이저리그 코리안리거', color: '#00e5ff' }, // 네온 시안
+  { id: 'KIA 타이거즈', color: '#EA0029' }, // KIA Red
+  { id: '삼성 라이온즈', color: '#2965CC' }, // Samsung Blue (Brightened)
+  { id: 'LG 트윈스', color: '#C30452' }, // LG Magenta
+  { id: '두산 베어스', color: '#3E3A85' }, // Doosan Navy (Brightened)
+  { id: 'KT 위즈', color: '#D1D1D1' },    // KT Silver/White Mix
+  { id: 'SSG 랜더스', color: '#CE0E2D' }, // SSG Red
+  { id: '한화 이글스', color: '#FC4E00' }, // Hanwha Orange
+  { id: '롯데 자이언츠', color: '#20386B' }, // Lotte Navy (Brightened)
+  { id: 'NC 다이노스', color: '#4D73AB' }, // NC Marine Blue (Brightened)
+  { id: '키움 히어로즈', color: '#8B0920' }, // Kiwoom Burgundy (Brightened)
+  { id: '메이저리그 코리안리거', color: '#00e5ff' }, // Neon Cyan
 ];
 
 interface NewsItem {
@@ -121,22 +120,22 @@ const KboNews: React.FC<KboNewsProps> = ({ onCancel, defaultTeam }) => {
       <div className="max-w-7xl mx-auto px-6 py-12">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <div className="flex-1">
-            <div className="inline-flex items-center space-x-2 bg-brand-accent/10 border border-brand-accent/20 rounded-full px-3 py-1 mb-4 backdrop-blur-sm">
+            <div className="inline-flex items-center space-x-2 bg-brand-accent/10 border border-brand-accent/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
                <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
-               <span className="text-[10px] md:text-xs font-mono text-brand-accent uppercase tracking-widest">Real-time KBO News Feed</span>
+               <span className="text-xs md:text-sm font-mono text-brand-accent uppercase tracking-widest font-bold">Real-time KBO News Feed</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-white tracking-tight mb-2 uppercase italic leading-none">
+            <h2 className="text-6xl md:text-8xl font-black text-white tracking-tight mb-4 uppercase italic leading-none">
               DUGOUT <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-brand-primary">LIVE NEWS</span>
             </h2>
-            <p className="text-slate-400 text-lg font-light max-w-2xl">
+            <p className="text-slate-400 text-xl md:text-2xl font-light max-w-2xl leading-relaxed">
               네이버 AI 뉴스와 더그아웃 데이터를 결합한 가장 빠른 야구 소식.
             </p>
           </div>
-          <button onClick={onCancel} className="bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-2xl text-slate-400 hover:text-white transition-all text-sm font-bold tracking-widest flex items-center gap-2 group">
+          <button onClick={onCancel} className="bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-4 rounded-2xl text-slate-400 hover:text-white transition-all text-base font-bold tracking-widest flex items-center gap-2 group">
             CLOSE
-            <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
