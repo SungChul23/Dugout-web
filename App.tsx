@@ -14,7 +14,8 @@ import MyDashboard from './components/MyDashboard';
 import FindMyTeam from './components/FindMyTeam';
 import GameSchedule from './components/GameSchedule';
 import TeamPlayerStats from './components/TeamPlayerStats';
-import PlayerPrediction from './components/PlayerPrediction'; // New Import
+import PlayerPrediction from './components/PlayerPrediction'; 
+import FaAnalysis from './components/FaAnalysis'; // New Import
 
 interface User {
   nickname: string;
@@ -23,7 +24,7 @@ interface User {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction'>('home');
+  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction' | 'faAnalysis'>('home');
   const [user, setUser] = useState<User | null>(null);
 
   const navigateToHome = () => setView('home');
@@ -43,14 +44,14 @@ function App() {
   const handleMenuClick = (targetView: string) => {
     const v = targetView as any;
     
-    // 로그인 필요한 페이지 체크
-    if (['prediction', 'dashboard'].includes(v) && !user) {
+    // 로그인 필요한 페이지 체크 (FA 분석 추가)
+    if (['prediction', 'dashboard', 'faAnalysis'].includes(v) && !user) {
        alert('로그인이 필요한 서비스입니다.');
        navigateToLogin();
        return;
     }
 
-    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home', 'prediction'].includes(v)) {
+    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home', 'prediction', 'faAnalysis'].includes(v)) {
       setView(v);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -62,19 +63,15 @@ function App() {
     if (id === '1') handleMenuClick('stats');
     else if (id === '2') handleMenuClick('schedule');
     else if (id === '3') handleMenuClick('news');
-    else if (id === '4') handleMenuClick('prediction'); // ID 4: 선수 미래 성적 예측
+    else if (id === '4') handleMenuClick('prediction'); 
+    else if (id === '5') { // 골든글러브 (아직 미구현 예시)
+        if(user) handleMenuClick('dashboard'); // 임시
+        else { alert('로그인이 필요합니다.'); navigateToLogin(); }
+    }
+    else if (id === '6') handleMenuClick('faAnalysis'); // ID 6: FA 시장 등급 분석
     else if (id === '7') handleMenuClick('tickets');
     else if (id === '8') handleMenuClick('findTeam');
     else if (id === '9') handleMenuClick('guide');
-    // 기타 AI 기능
-    else if (['5', '6'].includes(id)) {
-      if (user) {
-        handleMenuClick('dashboard');
-      } else {
-        alert('이 기능은 회원 전용 AI 서비스입니다. 로그인 후 대시보드에서 확인해주세요.');
-        navigateToLogin();
-      }
-    }
     else alert('해당 기능은 준비 중입니다.');
   };
 
@@ -154,7 +151,7 @@ function App() {
           </div>
         )}
 
-        {/* Signup 컴포넌트에 onLoginSuccess 전달 */}
+        {/* Components Rendering */}
         {view === 'signup' && <Signup onCancel={navigateToHome} onLoginSuccess={handleLoginSuccess} />}
         {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} onCancel={navigateToHome} onSignupClick={navigateToSignup} />}
         {view === 'tickets' && <TicketReservation onCancel={navigateToHome} />}
@@ -164,6 +161,7 @@ function App() {
         {view === 'schedule' && <GameSchedule onCancel={navigateToHome} user={user} />}
         {view === 'stats' && <TeamPlayerStats onCancel={navigateToHome} />}
         {view === 'prediction' && <PlayerPrediction onCancel={navigateToHome} user={user} />}
+        {view === 'faAnalysis' && <FaAnalysis onCancel={navigateToHome} user={user} />} 
         {view === 'dashboard' && user && (
           <MyDashboard 
             user={user} 
