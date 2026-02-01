@@ -64,9 +64,9 @@ function App() {
     else if (id === '2') handleMenuClick('schedule');
     else if (id === '3') handleMenuClick('news');
     else if (id === '4') handleMenuClick('prediction'); 
-    else if (id === '5') { // 골든글러브 (아직 미구현 예시)
-        if(user) handleMenuClick('dashboard'); // 임시
-        else { alert('로그인이 필요합니다.'); navigateToLogin(); }
+    else if (id === '5') { 
+      // 골든글러브: UI에 "개막 후 제공" 텍스트가 표시되므로 알림 제거
+      return; 
     }
     else if (id === '6') handleMenuClick('faAnalysis'); // ID 6: FA 시장 등급 분석
     else if (id === '7') handleMenuClick('tickets');
@@ -80,11 +80,41 @@ function App() {
     setView('home');
   };
 
-  const handleLogout = () => {
-    if (window.confirm('정말 로그아웃 하시겠습니까?')) {
+  const handleLogout = async () => {
+    console.log("로그아웃 프로세스 시작"); // 디버깅 로그
+
+    // 1. 사용자 재확인
+    if (!window.confirm('정말 로그아웃 하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+
+      // 2. 서버에 로그아웃 알리기 (토큰이 있는 경우만)
+      if (accessToken) {
+        await fetch('https://dugout.cloud/api/v1/members/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+    } catch (error) {
+      console.error("서버 로그아웃 통신 실패 (로컬 삭제 진행):", error);
+    } finally {
+      // 3. 로컬 스토리지의 모든 인증 정보 삭제 (무조건 실행)
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userNickname');
+      localStorage.removeItem('favoriteTeam');
+
+      // 4. 상태 초기화 및 홈으로 이동
       setUser(null);
       setView('home');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      console.log("로그아웃 완료");
     }
   };
 

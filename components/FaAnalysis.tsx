@@ -95,13 +95,18 @@ interface FaAnalysisProps {
 
 const getPositionType = (pos: string): 'Pitcher' | 'Batter' => {
   if (!pos) return 'Batter';
+
+  const upperPos = pos.toUpperCase().trim();
   
-  // 'P' (Pitcher), '투수', 또는 'P'로 시작하는 포지션(예: 'RP', 'SP', 'CP')을 투수로 판별
-  if (pos === 'P' || pos.includes('투수') || pos.includes('P')) {
-    return 'Pitcher';
-  }
+  // 1. 'P'로 시작하는 경우 (P, Pitcher)
+  // 2. 투수 관련 영문 약어 (SP, RP, CP)
+  // 3. 한글 키워드 포함
+  const isPitcher = 
+    upperPos.startsWith('P') || 
+    ['SP', 'RP', 'CP'].includes(upperPos) || 
+    upperPos.includes('투수');
   
-  return 'Batter';
+  return isPitcher ? 'Pitcher' : 'Batter';
 };
 
 // --- MOCK DATA GENERATOR (Fallback) ---
@@ -208,12 +213,12 @@ const MetricsGuide: React.FC = () => {
     Pitcher: [
       { name: '구위 점수', measure: '평균자책점(ERA), WHIP, 피안타율', desc: '"얼마나 압도적인가?"\n타자를 억제하고 안타를 맞지 않는 순수한 구위와 구속의 위력을 나타냅니다.' },
       { name: '안정성 점수', measure: '볼넷 비율(BB/9), 피홈런 비율(HR/9)', desc: '"얼마나 믿음직한가?"\n갑작스러운 무너짐 없이 경기를 운영하는 능력입니다. 볼넷과 홈런 허용이 적을수록 높습니다.' },
-      { name: '기여도 점수', measure: '이닝, QS, 승률, 세이브/홀드', desc: '"팀에 얼마나 공헌했나?"\n팀의 승리를 위해 얼마나 많은 이닝을 책임지고, 결정적인 순간을 지켜냈는지를 나타냅니다.' }
+      { name: '기여도 점수', measure: '이닝, WPCT (승률), 세이브/홀드', desc: '"팀에 얼마나 공헌했나?"\n팀의 승리를 위해 얼마나 많은 이닝을 책임지고, 결정적인 순간을 지켜냈는지를 나타냅니다.' }
     ],
     Batter: [
-      { name: '공격 점수', measure: 'OPS, 타격 생산성 지표(wRC+)', desc: '"얼마나 위협적인가?"\n상대 투수를 압도하는 타격 능력입니다. 단순히 안타를 치는 것을 넘어 팀 득점력을 측정합니다.' },
-      { name: '수비 점수', measure: '수비율(FPCT), 포지션 난이도', desc: '"얼마나 빈틈이 없는가?"\n실책 없는 수비력은 기본, 여러 포지션을 소화할 수 있는 전술적 가치와 수비 비중을 반영합니다.' },
-      { name: '기여도 점수', measure: '타석 수, 득점권 타율, 경기 비중', desc: '"해결사 본능이 있는가?"\n찬스에서 강한 모습과 꾸준한 경기 출장을 통해 팀 타선을 얼마나 이끌었는지 보여줍니다.' }
+      { name: '공격 점수', measure: 'OPS, RISP (득점권 타율)', desc: '"얼마나 위협적인가?"\n상대 투수를 압도하는 타격 능력입니다. 단순히 안타를 치는 것을 넘어 팀 득점력을 측정합니다.' },
+      { name: '수비 점수', measure: 'FPCT (수비율), Total_IP (수비 이닝)', desc: '"얼마나 빈틈이 없는가?"\n실책 없는 수비력은 기본, 얼마나 오랫동안 수비를 책임졌는지를 더 높게 평가하여 주전 수비수의 가치를 존중합니다.' },
+      { name: '기여도 점수', measure: 'PA (타석 수), Total_IP (수비 이닝) ,is_multi (멀티 포지션 가산점)', desc: '"팀 운영의 핵심적인 엔진인가?"\n풍부한 경기 경험을 바탕으로 한 꾸준함과 여러 포지션을 맡을 수 있는 다재다능함이 팀 승리에 기여하는 정도를 보여줍니다.' }
     ]
   };
 
@@ -312,6 +317,37 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
   const [loadingList, setLoadingList] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<FaPlayer | null>(null);
+  
+  // 팀별 FA 선수 카운트 상태 추가
+  const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
+
+  // 1-1. Fetch All Team Counts on Year Change
+  useEffect(() => {
+    const fetchAllCounts = async () => {
+      const newCounts: Record<string, number> = {};
+      
+      const promises = TEAMS.map(async (team) => {
+        const teamName = KOREAN_TEAM_NAMES[team.code] || team.code;
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/v1/fa-market/list?year=${selectedYear}&team=${encodeURIComponent(teamName)}`);
+          if (response.ok) {
+            const data = await response.json();
+            newCounts[team.code] = Array.isArray(data) ? data.length : 0;
+          } else {
+            newCounts[team.code] = 0;
+          }
+        } catch (e) {
+          console.error(`Failed to fetch counts for ${team.code}`);
+          newCounts[team.code] = 0;
+        }
+      });
+
+      await Promise.all(promises);
+      setTeamCounts(newCounts);
+    };
+
+    fetchAllCounts();
+  }, [selectedYear]);
 
   // 2. Fetch List
   useEffect(() => {
@@ -434,13 +470,6 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
     }
   };
 
-  const getPlayerCount = (teamCode: string, year: number): number => {
-     if (faList.length > 0 && selectedYear === year) {
-        return generateMockFaPlayers(teamCode, year).length; 
-     }
-     return generateMockFaPlayers(teamCode, year).length;
-  };
-
   return (
     <div className="relative z-10 w-full animate-fade-in-up min-h-screen pb-20 overflow-hidden">
       
@@ -521,7 +550,8 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
                <label className="block text-xs font-bold text-slate-500 mb-4 uppercase tracking-widest px-2">Select Team ({selectedYear})</label>
                <div className="flex lg:flex-col overflow-x-auto lg:overflow-visible gap-3 pb-4 lg:pb-0 no-scrollbar">
                  {TEAMS.map((team) => {
-                   const playerCount = getPlayerCount(team.code, selectedYear);
+                   // teamCounts 상태에서 값을 가져옴 (API로 조회된 값)
+                   const playerCount = teamCounts[team.code] || 0;
                    return (
                      <button
                        key={team.code}
@@ -751,7 +781,7 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
                               <span className="text-xs text-slate-400 uppercase tracking-widest font-black">Grade {player.grade}</span>
                             </div>
                             <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-300 group-hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full">
-                              View Report 
+                              더그아웃 분석 보기 
                               <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                             </button>
                         </div>

@@ -44,7 +44,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <nav 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 border-b ${
         scrolled ? 'bg-brand-dark/95 backdrop-blur-xl border-white/10 py-3 shadow-2xl' : 'bg-transparent border-transparent py-5'
       }`}
     >
@@ -102,7 +102,7 @@ const Navbar: React.FC<NavbarProps> = ({
                
                <button 
                 onClick={onLogoutClick}
-                className="text-slate-400 hover:text-red-400 transition-colors p-2 bg-white/5 hover:bg-white/10 rounded-full"
+                className="text-slate-400 hover:text-red-400 transition-colors p-2 bg-white/5 hover:bg-white/10 rounded-full relative z-10 cursor-pointer"
                 title="로그아웃"
                >
                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>

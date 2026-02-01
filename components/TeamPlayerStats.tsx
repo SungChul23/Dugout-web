@@ -45,17 +45,18 @@ interface MetricLeaderboard {
 
 // --- MOCK DATA ---
 
+// 2026 시즌 개막 전이므로 모든 스탯을 0으로 초기화
 const ACTUAL_RANKING: TeamRank[] = [
-  { rank: 1, name: 'KIA 타이거즈', played: 144, win: 87, draw: 2, loss: 55, winRate: '0.613', gameBehind: 0 },
-  { rank: 2, name: '삼성 라이온즈', played: 144, win: 78, draw: 2, loss: 64, winRate: '0.549', gameBehind: 9.0 },
-  { rank: 3, name: 'LG 트윈스', played: 144, win: 76, draw: 2, loss: 66, winRate: '0.535', gameBehind: 11.0 },
-  { rank: 4, name: '두산 베어스', played: 144, win: 74, draw: 2, loss: 68, winRate: '0.521', gameBehind: 13.0 },
-  { rank: 5, name: 'kt wiz', played: 144, win: 72, draw: 2, loss: 70, winRate: '0.507', gameBehind: 15.0 },
-  { rank: 6, name: 'SSG 랜더스', played: 144, win: 72, draw: 2, loss: 70, winRate: '0.507', gameBehind: 15.0 },
-  { rank: 7, name: '롯데 자이언츠', played: 144, win: 66, draw: 4, loss: 74, winRate: '0.471', gameBehind: 20.0 },
-  { rank: 8, name: '한화 이글스', played: 144, win: 66, draw: 2, loss: 76, winRate: '0.465', gameBehind: 21.0 },
-  { rank: 9, name: 'NC 다이노스', played: 144, win: 61, draw: 2, loss: 81, winRate: '0.430', gameBehind: 26.0 },
-  { rank: 10, name: '키움 히어로즈', played: 144, win: 58, draw: 0, loss: 86, winRate: '0.403', gameBehind: 30.0 },
+  { rank: 1, name: 'KIA 타이거즈', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: '삼성 라이온즈', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: 'LG 트윈스', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: '두산 베어스', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: 'kt wiz', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: 'SSG 랜더스', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: '롯데 자이언츠', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: '한화 이글스', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: 'NC 다이노스', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
+  { rank: 1, name: '키움 히어로즈', played: 0, win: 0, draw: 0, loss: 0, winRate: '0.000', gameBehind: 0 },
 ];
 
 const PREDICTED_RANKING: PredictedRank[] = [
@@ -552,7 +553,7 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
           <div className="bg-[#0a0f1e]/80 border border-white/10 rounded-[2.5rem] p-8 md:p-10">
             <h3 className="text-3xl font-black text-white mb-8 flex items-center gap-4">
               <span className="w-2 h-8 bg-slate-500 rounded-full"></span>
-              2026 KBO 정규리그 순위
+              2026 KBO 정규리그 순위 (개막 전)
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -567,12 +568,10 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-lg">
-                  {ACTUAL_RANKING.map((team) => (
+                  {ACTUAL_RANKING.map((team, index) => (
                     <tr key={team.name} className="hover:bg-white/5 transition-colors">
                       <td className="px-4 py-4 font-mono font-bold text-slate-300">
-                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg ${team.rank <= 5 ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-500'}`}>
-                          {team.rank}
-                        </span>
+                        -
                       </td>
                       <td className="px-4 py-4 font-bold text-white text-xl">{team.name}</td>
                       <td className="px-4 py-4 text-slate-400">{team.played}</td>
@@ -639,23 +638,20 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
         </div>
 
         {/* SECTION 2: STATS TABS with Maniac Mode Toggle */}
-        <div className="mb-12 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/10 pb-6">
+        <div className="mb-12 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-white/10 pb-6 relative opacity-50 pointer-events-none select-none filter blur-[2px]">
            {/* Tabs - Larger */}
            <div className="flex flex-wrap gap-4">
               <button 
-                onClick={() => setActiveTab('team')}
                 className={`px-8 py-3 rounded-2xl text-xl font-black transition-all ${activeTab === 'team' ? 'bg-white text-black' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
               >
                 팀 기록
               </button>
               <button 
-                onClick={() => setActiveTab('batter')}
                 className={`px-8 py-3 rounded-2xl text-xl font-black transition-all ${activeTab === 'batter' ? 'bg-pink-500 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
               >
                 타자 기록
               </button>
               <button 
-                onClick={() => setActiveTab('pitcher')}
                 className={`px-8 py-3 rounded-2xl text-xl font-black transition-all ${activeTab === 'pitcher' ? 'bg-cyan-500 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
               >
                 투수 기록
@@ -668,7 +664,6 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
                 {isAdvanced ? "🤓 야구 좀 보시네요! 심화 분석 중" : "🤔 진짜 야구팬은 숫자의 깊이를 봅니다"}
               </span>
               <button 
-                onClick={() => setIsAdvanced(!isAdvanced)}
                 className={`relative w-14 h-8 rounded-full transition-colors duration-300 focus:outline-none ${isAdvanced ? 'bg-brand-accent' : 'bg-slate-700'}`}
               >
                  <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 shadow-sm ${isAdvanced ? 'translate-x-6' : 'translate-x-0'}`}></div>
@@ -679,68 +674,26 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel }) => {
            </div>
         </div>
 
-        {/* STATS CONTENT: RANKING CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
-          {getActiveMetrics().map((metric) => (
-            <div key={metric.key} className="bg-[#0a0f1e] border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col shadow-lg hover:border-white/20 transition-all duration-300 group hover:-translate-y-2">
-              {/* Header */}
-              <div className="px-8 py-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
-                <h4 className={`text-2xl font-black ${activeTab === 'batter' ? 'text-pink-500' : activeTab === 'pitcher' ? 'text-cyan-400' : 'text-white'}`}>{metric.title}</h4>
-                <div className="text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg border border-white/5 font-bold">TOP 5</div>
-              </div>
-
-              {/* 1st Place - Hero Section Larger */}
-              <div className="p-8 flex items-center justify-between relative overflow-hidden">
-                {/* Background Glow */}
-                <div 
-                  className="absolute -right-6 -top-6 w-40 h-40 rounded-full opacity-10 blur-2xl" 
-                  style={{ backgroundColor: getTeamColor(metric.items[0].teamCode) }}
-                ></div>
-
-                <div className="flex flex-col items-start z-10">
-                   <div className="flex items-center gap-4 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-black font-black text-lg shadow-lg shadow-yellow-500/20">1</div>
-                      <span className="text-4xl md:text-5xl font-black text-white tracking-tight">{metric.items[0].value}<span className="text-xl font-bold text-slate-400 ml-1.5">{metric.items[0].unit}</span></span>
-                   </div>
-                   <div className="flex flex-col">
-                      <span className="text-2xl font-bold text-slate-200">{metric.items[0].name}</span>
-                      {metric.items[0].subInfo && <span className="text-lg text-slate-500 font-medium">{metric.items[0].subInfo}</span>}
-                   </div>
-                </div>
-
-                {/* Team Logo / Symbol - Larger */}
-                <div className="z-10">
-                   <div 
-                      className="w-20 h-20 rounded-3xl flex items-center justify-center text-2xl font-black text-white shadow-2xl border-2 border-white/10"
-                      style={{ backgroundColor: getTeamColor(metric.items[0].teamCode) }}
-                   >
-                     {metric.items[0].teamCode || metric.items[0].name.substring(0, 2)}
-                   </div>
-                </div>
-              </div>
-
-              {/* 2nd ~ 5th Place - List Larger */}
-              <div className="flex-1 bg-[#0f1629]">
-                 {metric.items.slice(1).map((item) => (
-                   <div key={item.rank} className="flex items-center justify-between px-8 py-5 border-t border-white/5 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center gap-5">
-                         <span className="text-slate-500 font-mono font-bold w-6 text-lg">{item.rank}</span>
-                         <div className="flex items-center gap-4">
-                            <div className="w-2 h-10 rounded-full" style={{ backgroundColor: getTeamColor(item.teamCode) }}></div>
-                            <div className="flex flex-col">
-                               <span className="text-lg font-bold text-slate-300">{item.name}</span>
-                               {item.subInfo && <span className="text-sm text-slate-500">{item.subInfo}</span>}
-                            </div>
-                         </div>
-                      </div>
-                      <span className="text-xl font-mono font-bold text-white">{item.value}<span className="text-sm font-normal text-slate-500 ml-1">{item.unit}</span></span>
-                   </div>
-                 ))}
-              </div>
-              
-            </div>
-          ))}
+        {/* Coming Soon Overlay Content */}
+        <div className="relative py-20 bg-[#0a0f1e]/40 border-2 border-dashed border-white/5 rounded-[3rem] flex flex-col items-center justify-center -mt-10">
+           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0f1e]/80 to-[#0a0f1e]"></div>
+           <div className="relative z-10 text-center">
+             <div className="w-24 h-24 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl shadow-inner border border-white/5">
+                🔒
+             </div>
+             <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
+               2026 KBO 리그 개막 후 제공됩니다.
+             </h3>
+             <p className="text-slate-400 text-lg md:text-xl font-light">
+               팀/타자/투수 세부 기록은 정규시즌 개막 이후<br/>실시간 데이터와 함께 업데이트될 예정입니다.
+             </p>
+           </div>
         </div>
+
+        {/* STATS CONTENT: RANKING CARDS (Hidden visually but structure kept for future use if needed, effectively hidden by overlay above and blur) */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up filter blur-md opacity-20 pointer-events-none select-none">
+           ... (Original Content) ...
+        </div> */}
 
       </div>
     </div>

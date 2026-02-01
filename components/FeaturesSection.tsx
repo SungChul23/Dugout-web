@@ -61,39 +61,58 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onFeatureClick }) => 
               
               {/* Cards Grid - Reduced Padding, Increased Text Size */}
               <div className="space-y-4">
-                {FEATURES.filter(f => f.category === category).map((feature) => (
-                  <div 
-                    key={feature.id}
-                    onClick={() => onFeatureClick?.(feature.id)}
-                    className={`
-                      group relative overflow-hidden
-                      bg-[#0a0f1e] border border-white/5 
-                      p-6 rounded-[1.25rem] transition-all duration-300 cursor-pointer
-                      flex flex-col justify-center min-h-[160px]
-                      ${config.glow} hover:-translate-y-1 hover:border-white/20 shadow-lg
-                    `}
-                  >
-                    {/* Hover Background Accent */}
-                    <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${config.bg} pointer-events-none`}></div>
-                    
-                    {/* Left Color Bar */}
-                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full transition-all duration-300 ${config.accent} opacity-0 group-hover:opacity-100 group-hover:h-2/3`}></div>
+                {FEATURES.filter(f => f.category === category).map((feature) => {
+                  const isComingSoon = feature.id === '5'; // 골든글러브/수상 예측 ID
 
-                    <div className="relative z-10">
-                      <div className="flex justify-between items-start mb-3">
-                        <h4 className="text-2xl md:text-3xl font-bold text-slate-200 group-hover:text-white transition-colors duration-300 tracking-tight">
-                          {feature.title}
-                        </h4>
-                        <div className={`opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 ${config.color}`}>
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  return (
+                    <div 
+                      key={feature.id}
+                      onClick={() => !isComingSoon && onFeatureClick?.(feature.id)}
+                      className={`
+                        group relative overflow-hidden
+                        bg-[#0a0f1e] border border-white/5 
+                        p-6 rounded-[1.25rem] transition-all duration-300
+                        flex flex-col justify-center min-h-[160px]
+                        ${isComingSoon 
+                          ? 'cursor-default opacity-80 border-dashed border-white/10' 
+                          : `cursor-pointer ${config.glow} hover:-translate-y-1 hover:border-white/20 shadow-lg`
+                        }
+                      `}
+                    >
+                      {/* Hover Background Accent (Only if not coming soon) */}
+                      {!isComingSoon && (
+                        <>
+                          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${config.bg} pointer-events-none`}></div>
+                          <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full transition-all duration-300 ${config.accent} opacity-0 group-hover:opacity-100 group-hover:h-2/3`}></div>
+                        </>
+                      )}
+
+                      <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex flex-col">
+                            <h4 className={`text-2xl md:text-3xl font-bold transition-colors duration-300 tracking-tight ${isComingSoon ? 'text-slate-500' : 'text-slate-200 group-hover:text-white'}`}>
+                              {feature.title}
+                            </h4>
+                            {isComingSoon && (
+                              <span className="inline-block mt-2 text-[11px] font-bold text-orange-400 bg-orange-400/10 px-2 py-1 rounded border border-orange-400/20 tracking-wide w-fit">
+                                ⚠️ 2026 KBO 리그 개막 후 제공됩니다.
+                              </span>
+                            )}
+                          </div>
+                          
+                          {!isComingSoon && (
+                            <div className={`opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 ${config.color}`}>
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            </div>
+                          )}
                         </div>
+                        <p className={`text-lg leading-snug font-light transition-colors ${isComingSoon ? 'text-slate-600' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                          {feature.description}
+                        </p>
                       </div>
-                      <p className="text-lg text-slate-500 leading-snug font-light group-hover:text-slate-300 transition-colors">
-                        {feature.description}
-                      </p>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );
