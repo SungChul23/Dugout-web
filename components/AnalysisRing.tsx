@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { TEAMS } from '../constants';
 
@@ -17,7 +18,7 @@ const AnalysisRing: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-[600px] flex items-center justify-center overflow-visible perspective-container my-12">
+    <div className="relative w-full h-[400px] md:h-[600px] flex items-center justify-center overflow-visible perspective-container my-4 md:my-12">
       
       {/* Central Analysis Zone (Strike Zone) - Focus Point */}
       <div className="absolute z-20 w-[240px] h-[360px] pointer-events-none">

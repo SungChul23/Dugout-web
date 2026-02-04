@@ -124,7 +124,7 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
       <div className="w-[95%] max-w-[1600px] mx-auto px-4 md:px-8 py-12">
         
         {/* Header Section - Font Size Increased */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 border-b border-white/5 pb-8">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 border-b border-white/5 pb-8">
           <div>
             <div className="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -144,6 +144,18 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
             <span className="text-base font-bold">메인으로</span>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
+        </div>
+
+        {/* Schedule Notice Info */}
+        <div className="mb-12 bg-blue-500/5 border border-blue-500/20 rounded-2xl p-5 md:p-6 flex items-start gap-4 backdrop-blur-sm">
+           <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+             <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+             </svg>
+           </div>
+           <p className="text-slate-300 text-sm md:text-base leading-relaxed font-medium">
+             KBO 정규시즌은 팀당 144경기를 치르며, 이 중 9월 초/중순까지 우천 취소 등을 고려해 팀당 135경기가 우선 편성됩니다.
+           </p>
         </div>
 
         {/* Controls Layout: Month & Day Slider */}

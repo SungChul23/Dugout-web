@@ -7,7 +7,7 @@ const API_BASE_URL = "https://dugout.cloud";
 interface MyDashboardProps {
   user: { nickname: string; favoriteTeam?: string; teamSlogan?: string };
   onFindTeamClick: () => void;
-  // onUpdateTeam Removed
+  onNewsClick: () => void; // 뉴스 페이지로 이동하는 핸들러 추가
 }
 
 // 서버 DTO 구조
@@ -21,10 +21,19 @@ interface PlayerInsightDto {
   isEmpty: boolean;
 }
 
+interface NewsItemDto {
+  title: string;
+  description?: string;
+  link?: string;
+  pubDate?: string;
+}
+
 interface DashboardResponse {
   favoriteTeamName: string;
   teamSlogan?: string; 
+  bookingUrl?: string; // 티켓 예매 링크
   insights: PlayerInsightDto[];
+  news: NewsItemDto[]; // 뉴스 리스트
 }
 
 // 한글 팀명 -> constants.ts의 영문 팀명 매핑 (데이터 조회용)
@@ -66,7 +75,10 @@ const ENGLISH_TO_KOREAN: Record<string, string> = {
   'KIWOOM HEROES': '키움 히어로즈',
 };
 
-const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick }) => {
+// HTML 태그 제거 및 따옴표 정리 유틸리티
+const cleanText = (text: string) => text.replace(/<b>/g, '').replace(/<\/b>/g, '').replace(/&quot;/g, '"');
+
+const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNewsClick }) => {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -177,6 +189,9 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick }) => {
     { slotNumber: 2, isEmpty: true },
     { slotNumber: 3, isEmpty: true },
   ] as PlayerInsightDto[];
+  
+  const newsList = dashboardData?.news || [];
+  const ticketUrl = dashboardData?.bookingUrl || myTeam.ticketUrl;
 
   return (
     <div className="relative z-10 w-full animate-scale-up pb-32">
@@ -368,24 +383,50 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick }) => {
           <div className="space-y-10">
             <div className="flex items-center justify-between">
               <h3 className="text-3xl font-bold text-white">Latest News</h3>
-              <button className="text-sm text-slate-500 hover:text-white transition-colors">More</button>
+              <button 
+                onClick={onNewsClick}
+                className="text-sm text-slate-500 hover:text-white transition-colors font-bold"
+              >
+                더보기
+              </button>
             </div>
             
             <div className="bg-[#0a0f1e]/80 border border-white/5 rounded-[2rem] p-8 space-y-8">
-               {[1, 2, 3].map((_, i) => (
-                 <div key={i} className="group cursor-pointer">
-                    <div className="flex justify-between items-start mb-3">
-                       <span className="text-[11px] text-slate-500 border border-white/10 px-2 py-0.5 rounded font-bold">TODAY</span>
-                    </div>
-                    <h5 className="text-base font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 mb-3 leading-snug">
-                       {myTeam.name}의 {i === 0 ? '핵심 불펜 투수 복귀 임박, 마운드 숨통 트이나' : i === 1 ? '주말 시리즈 예매 매진 행렬, 팬심 폭발' : '신인 드래프트 전략 분석, 미래를 위한 선택'}
-                    </h5>
-                    <p className="text-sm text-slate-500 line-clamp-1">더그아웃 AI가 분석한 결과 긍정적인 신호가 포착되었습니다.</p>
+               {newsList.length > 0 ? (
+                 newsList.map((item, i) => (
+                   <a 
+                     key={i} 
+                     href={item.link || '#'} 
+                     target="_blank" 
+                     rel="noopener noreferrer" 
+                     className="group cursor-pointer block"
+                   >
+                      <div className="flex justify-between items-start mb-3">
+                         <span className="text-[11px] text-slate-500 border border-white/10 px-2 py-0.5 rounded font-bold">TODAY</span>
+                      </div>
+                      <h5 className="text-base font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 mb-2 leading-snug">
+                         {cleanText(item.title)}
+                      </h5>
+                      <p className="text-sm text-slate-500 line-clamp-1">
+                        {item.description ? cleanText(item.description) : '상세 내용은 기사 본문에서 확인하세요.'}
+                      </p>
+                   </a>
+                 ))
+               ) : (
+                 <div className="text-center py-10">
+                   <p className="text-slate-500 text-sm">최근 뉴스가 없습니다.</p>
                  </div>
-               ))}
+               )}
             </div>
 
-            <div className="p-8 rounded-[2rem] border border-white/5 relative overflow-hidden group cursor-pointer" style={{ backgroundColor: `${teamColor}11` }}>
+            {/* Ticket Booking Link */}
+            <a 
+              href={ticketUrl || '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block p-8 rounded-[2rem] border border-white/5 relative overflow-hidden group cursor-pointer transition-all hover:brightness-110" 
+              style={{ backgroundColor: `${teamColor}11` }}
+            >
                <div className="relative z-10 flex justify-between items-center">
                   <div>
                     <h4 className="font-bold text-white mb-1 text-lg">직관 티켓 예매</h4>
@@ -395,7 +436,7 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick }) => {
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
                   </div>
                </div>
-            </div>
+            </a>
           </div>
 
         </div>
