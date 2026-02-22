@@ -117,14 +117,14 @@ const generateMockFaPlayers = (teamCode: string, year: number): FaPlayer[] => {
     if (teamCode === 'KIA') {
       players.push({
         id: 101, name: '최형우', position: 'DH', positionType: 'Batter', age: 42, grade: 'B', currentSalary: '15억', 
-        predictionSummary: '"KBO 역사상 가장 위대한 해결사, 불멸의 타점왕"', // DB 데이터 시뮬레이션 (따옴표 포함)
+        predictionSummary: 'KBO 역사상 가장 위대한 해결사, 불멸의 타점왕', // Quotes removed
         report: '베테랑의 품격을 보여주는 타격 지표를 유지 중입니다. 배트 스피드는 소폭 감소했으나 타구 방향 설정과 선구안은 여전히 리그 상위권입니다.',
         faStatus: '잔류 유력',
         stats: [{label: '공격 점수', value: 88.5}, {label: '수비 점수', value: 10.0}, {label: '기여도 점수', value: 82.4}]
       });
       players.push({
         id: 102, name: '임기영', position: 'RP', positionType: 'Pitcher', age: 33, grade: 'B', currentSalary: '3억', 
-        predictionSummary: '"마운드의 만능 열쇠, 헌신적인 이닝 이터"',
+        predictionSummary: '마운드의 만능 열쇠, 헌신적인 이닝 이터', // Quotes removed
         report: '사이드암 투수로서의 희소성과 롱릴리프, 필승조를 오가는 활용폭이 장점입니다.',
         faStatus: '미정',
         stats: [{label: '구위 점수', value: 72.1}, {label: '안정성 점수', value: 78.5}, {label: '기여도 점수', value: 80.0}]
@@ -132,7 +132,7 @@ const generateMockFaPlayers = (teamCode: string, year: number): FaPlayer[] => {
     } else if (teamCode === 'SSG') {
       players.push({
         id: 601, name: '최정', position: '3B', positionType: 'Batter', age: 39, grade: 'A', currentSalary: '106억(4년)', 
-        predictionSummary: '"리빙 레전드, 에이징 커브를 거스르는 홈런왕"',
+        predictionSummary: '리빙 레전드, 에이징 커브를 거스르는 홈런왕', // Quotes removed
         report: '리그 역사상 최고의 3루수. 30대 후반임에도 불구하고 여전한 배트 스피드와 장타력을 과시하고 있습니다.',
         faStatus: '계약 완료',
         stats: [{label: '공격 점수', value: 96.2}, {label: '수비 점수', value: 75.5}, {label: '기여도 점수', value: 94.8}]
@@ -174,8 +174,7 @@ const GradeBadge: React.FC<{ grade: FaGrade }> = ({ grade }) => {
   }
 
   return (
-    // 배경을 반투명(bg-black/20)으로 변경하여 카드 그라데이션과 어우러지게 수정
-    <div className={`flex flex-col items-center justify-center w-24 h-36 rounded-b-2xl border-x border-b backdrop-blur-xl absolute top-0 right-8 z-20 bg-black/20 border-white/10 ${colorClass}`}>
+    <div className={`flex flex-col items-center justify-center w-24 h-36 rounded-b-2xl border-x border-b absolute top-0 right-8 z-20 bg-[#0f172a] border-white/10 ${colorClass} shadow-xl`}>
       <span className="text-xs font-black tracking-widest opacity-80 mb-1">{label}</span>
       <span className={`text-7xl font-black leading-none mt-0 drop-shadow-xl ${shadowClass}`}>{grade}</span>
     </div>
@@ -289,20 +288,35 @@ const StatBar: React.FC<{ label: string; value: number; color: string }> = ({ la
 
 // 5. Loading Overlay
 const AnalysisLoadingOverlay: React.FC = () => (
-  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in-up">
-    <div className="relative w-32 h-32 mb-10">
-      <div className="absolute inset-0 border-4 border-white/10 rounded-full"></div>
-      <div className="absolute inset-0 border-4 border-t-cyan-400 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-      <div className="absolute inset-4 border-4 border-pink-500/20 rounded-full animate-pulse"></div>
-      <div className="absolute inset-0 flex items-center justify-center text-4xl">📝</div>
+  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0f1e]/90 backdrop-blur-xl animate-fade-in-up">
+    <div className="relative w-40 h-40 mb-10">
+      {/* Outer Glow */}
+      <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl animate-pulse"></div>
+      
+      {/* Spinner Rings */}
+      <div className="absolute inset-0 border-4 border-white/5 rounded-full"></div>
+      <div className="absolute inset-0 border-4 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+      <div className="absolute inset-4 border-4 border-pink-500/20 rounded-full animate-spin-reverse"></div>
+      
+      {/* Icon */}
+      <div className="absolute inset-0 flex items-center justify-center text-5xl animate-bounce-slight">
+        🤖
+      </div>
     </div>
-    <h3 className="text-3xl font-black text-white mb-4 text-center tracking-tight">
-      AI Scouter Report
+    
+    <h3 className="text-4xl font-black text-white mb-4 text-center tracking-tight drop-shadow-lg">
+      AI SCOUTING REPORT
     </h3>
-    <p className="text-xl text-slate-300 font-light animate-pulse text-center">
-      더그아웃 스카웃터가 총 성적을 바탕으로<br/>
-      <span className="font-bold text-white">리포트를 작성하고 있어요...</span>
-    </p>
+    <div className="flex flex-col items-center gap-2">
+      <p className="text-xl text-slate-300 font-light text-center">
+        더그아웃 AI가 선수의 데이터를 정밀 분석 중입니다.
+      </p>
+      <div className="flex gap-1 mt-2">
+        <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
+        <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+        <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+      </div>
+    </div>
   </div>
 );
 
@@ -320,6 +334,9 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
   
   // 팀별 FA 선수 카운트 상태 추가
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
+
+  // Helper to clean summary text (remove quotes)
+  const cleanSummary = (text: string) => text.replace(/^["']|["']$/g, '');
 
   // 1-1. Fetch All Team Counts on Year Change
   useEffect(() => {
@@ -706,7 +723,7 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
                                         className="text-3xl md:text-4xl font-serif font-black italic leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 drop-shadow-sm"
                                       >
                                         {/* DETAIL 화면: 여기도 따옴표 제거 적용 */}
-                                        {selectedPlayer.predictionSummary}
+                                        {cleanSummary(selectedPlayer.predictionSummary)}
                                       </p>
                                    </div>
 
@@ -769,7 +786,7 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
                            <p 
                              className="text-2xl font-serif italic font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 leading-snug drop-shadow-md whitespace-pre-line"
                            >
-                             {player.predictionSummary}
+                             {cleanSummary(player.predictionSummary)}
                            </p>
                         </div>
                       </div>

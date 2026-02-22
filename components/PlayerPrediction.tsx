@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { TEAMS } from '../constants';
 
 const API_BASE_URL = "https://dugout.cloud";
@@ -53,42 +54,73 @@ interface ServerPlayerDto {
   position_type: string; 
 }
 
-// 서버 Prediction 응답 DTO
+// 서버 Prediction 응답 DTO (Updated)
 interface ServerPredictionDto {
   name: string;
   backNumber: number;
   position: string;
 
   // --- 타자 전용 지표 ---
+  currAvg?: number;
   predAvg?: number;
-  predHr?: number;
-  predOps?: number;
   avgDiff?: number;
-  hrDiff?: number;
+  avgMin?: number;
+  avgMax?: number;
+
+  currObp?: number;
+  predObp?: number;
+  diffObp?: number;
+  obpMin?: number;
+  obpMax?: number;
+
+  currSlg?: number;
+  predSlg?: number;
+  diffSlg?: number;
+  slgMin?: number;
+  slgMax?: number;
+
+  currOps?: number;
+  predOps?: number;
   opsDiff?: number;
-  currentAvg?: number;
-  currentHr?: number;
-  currentOps?: number;
+  opsMin?: number;
+  opsMax?: number;
+
+  currHr?: number;
+  predHr?: number;
+  hrDiff?: number;
+  hrMin?: number;
+  hrMax?: number;
 
   // --- 투수 전용 지표 ---
-  currentEra?: number;      // 현재 ERA
-  currentWhip?: number;     // 현재 WHIP
-  eraEliteProb?: number;    // 내년 ERA 엘리트 확률 (0.0 ~ 1.0)
-  whipEliteProb?: number;   // 내년 WHIP 엘리트 확률 (0.0 ~ 1.0)
+  probElite?: number;         // 엘리트 확률
+  rolePercentileTop?: number; // 상위 %
+  roleRank?: number;             // 보직 내 순위
+  roleTotal?: number;            // 보직 내 전체 인원
 
   aiReport: string;
 }
 
 interface StatMetric {
+  type: 'avg' | 'hr' | 'ops' | 'pitcher';
   label: string;
-  current: number | string; // 2025 Actual
-  predicted: number | string; // 2026 Predicted (Batters) OR Probability (Pitchers)
-  diff?: number; // (+/- value) - Only for Batters
-  unit?: string;
-  maxScale?: number; // 차트 그릴 때 최대값 기준
   
-  // 투수 전용 필드
-  isProbability?: boolean; // 확률 기반 데이터인지 여부
+  // Batter Fields
+  current?: number;
+  predicted?: number;
+  diff?: number;
+  min?: number;
+  max?: number;
+  unit?: string;
+  
+  // OPS Breakdown
+  obp?: { current: number, predicted: number, min: number, max: number, diff: number };
+  slg?: { current: number, predicted: number, min: number, max: number, diff: number };
+
+  // Pitcher Fields
+  probElite?: number;
+  rolePercentileTop?: number;
+  roleRank?: number;
+  roleTotal?: number;
 }
 
 interface PredictionResult {
@@ -96,7 +128,7 @@ interface PredictionResult {
   playerName: string;
   metrics: StatMetric[];
   aiFeedback: string;
-  role: Role; // Role 추가 (렌더링 분기용)
+  role: Role;
 }
 
 interface PlayerPredictionProps {
@@ -119,25 +151,21 @@ const JerseyCard: React.FC<JerseyCardProps> = ({ player, color, textColor = 'whi
       onClick={onClick} 
       className="group relative cursor-pointer flex flex-col items-center justify-center transition-all duration-300 hover:-translate-y-3"
     >
-      {/* Jersey SVG Shape - Increased Size to 220px */}
+      {/* Jersey SVG Shape */}
       <div className="relative w-full max-w-[220px] drop-shadow-2xl group-hover:drop-shadow-[0_25px_50px_rgba(255,255,255,0.25)] transition-all duration-500">
         <svg 
           viewBox="0 0 240 240" 
           className="w-full h-auto"
         >
-          {/* Main Body Path */}
           <path 
             d="M90,20 Q120,40 150,20 L210,50 L230,80 L180,95 L180,230 L60,230 L60,95 L10,80 L30,50 L90,20 Z" 
             fill={color} 
             stroke="rgba(255,255,255,0.2)" 
             strokeWidth="2"
           />
-          {/* Collar Line */}
           <path d="M90,20 Q120,40 150,20" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="3" />
-          {/* Sleeve Lines */}
           <line x1="30" y1="50" x2="60" y2="95" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
           <line x1="210" y1="50" x2="180" y2="95" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
-          {/* Name */}
           <text 
             x="120" y="85" 
             textAnchor="middle" 
@@ -149,7 +177,6 @@ const JerseyCard: React.FC<JerseyCardProps> = ({ player, color, textColor = 'whi
           >
             {player.name}
           </text>
-          {/* Number */}
           <text 
             x="120" y="175" 
             textAnchor="middle" 
@@ -175,117 +202,195 @@ const JerseyCard: React.FC<JerseyCardProps> = ({ player, color, textColor = 'whi
 
 // --- BATTER CHARTS ---
 
-interface ComparisonChartProps {
-  metric: StatMetric;
-  color: string;
-}
+// 1. Batter Range Chart (AVG, HR)
+const BatterRangeChart: React.FC<{ metric: StatMetric; color: string }> = ({ metric, color }) => {
+  const current = metric.current || 0;
+  const predicted = metric.predicted || 0;
+  const min = metric.min || predicted;
+  const max = metric.max || predicted;
+  const diff = metric.diff || 0;
+  const isUp = diff >= 0;
 
-const VerticalComparisonChart: React.FC<ComparisonChartProps> = ({ metric, color }) => {
-  const current = Number(metric.current);
-  const predicted = Number(metric.predicted);
-  const max = metric.maxScale || Math.max(current, predicted) * 1.2;
-  
-  const VISUAL_MAX_HEIGHT = 200; 
-  const hCurrentPx = Math.max((current / max) * VISUAL_MAX_HEIGHT, 4);
-  const hPredictedPx = Math.max((predicted / max) * VISUAL_MAX_HEIGHT, 4);
-  
-  const isUp = predicted >= current;
-  const diffVal = Math.abs(Number(metric.diff));
-  
-  const diffText = metric.label.includes('AVG') ? diffVal.toFixed(3) : diffVal.toFixed(0);
+  // Scale calculation
+  const isAvg = metric.type === 'avg';
+  const maxValue = Math.max(current, max) * 1.2;
+  const scale = (val: number) => Math.min((val / maxValue) * 100, 100);
 
   return (
     <div 
-      className="bg-[#0f172a]/80 backdrop-blur-sm rounded-[2rem] p-8 border border-white/5 flex flex-col h-full relative overflow-hidden group min-h-[420px] transition-all hover:bg-[#0f172a]"
-      style={{ boxShadow: `0 0 20px -10px ${color}44`, borderColor: `${color}33` }}
+      className="rounded-[2rem] p-8 flex flex-col h-full relative overflow-hidden group min-h-[400px] transition-all duration-300 hover:scale-[1.02]"
+      style={{ 
+        border: `2px solid ${color}`,
+        backgroundColor: '#0f172a',
+        boxShadow: `0 0 25px -5px ${color}55, inset 0 0 30px -10px ${color}33`
+      }}
     >
-      <div className="flex justify-between items-start mb-8 z-10 relative">
-        <h4 className="text-2xl font-black text-white uppercase tracking-tight">{metric.label}</h4>
-        
-        <div className={`px-4 py-2 rounded-xl text-base font-black flex items-center gap-2 border shadow-lg ${isUp ? 'bg-green-500/10 text-green-400 border-green-500/30 shadow-green-500/10' : 'bg-red-500/10 text-red-400 border-red-500/30 shadow-red-500/10'}`}>
-           <span className="text-xl">{isUp ? '▲' : '▼'}</span>
-           <span>{diffText}</span>
+      {/* Inner Neon Gradient */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${color}1a 0%, transparent 60%)` }}></div>
+
+      {/* Header */}
+      <div className="flex justify-between items-start mb-10 relative z-10">
+        <div>
+           <h4 className="text-3xl font-black text-white uppercase tracking-tight mb-1">{metric.label}</h4>
+           <span className="text-sm text-slate-400 font-bold uppercase tracking-widest">Prediction Range</span>
+        </div>
+        <div className={`px-4 py-2 rounded-xl text-lg font-black flex items-center gap-1 border ${isUp ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
+           <span>{isUp ? '▲' : '▼'}</span>
+           <span>{Math.abs(diff).toFixed(isAvg ? 3 : 0)}</span>
         </div>
       </div>
 
-      <div className="flex-1 flex items-end justify-center gap-12 z-10 relative pb-6 w-full h-[280px]">
-         {/* 2025 Bar */}
-         <div className="flex flex-col items-center justify-end group/bar flex-1 relative h-full">
-            <div className="w-full max-w-[60px] h-[200px] bg-white/5 rounded-t-xl absolute bottom-6 left-1/2 -translate-x-1/2"></div>
-            <div className="flex flex-col items-center relative w-full max-w-[60px] z-10 mb-6">
-                <span className="text-lg font-mono font-bold text-slate-400 mb-2">{metric.current}</span>
-                <div className="w-full bg-slate-500 rounded-t-xl relative overflow-hidden transition-all duration-1000 shadow-lg" style={{ height: `${hCurrentPx}px` }}></div>
+      {/* Content */}
+      <div className="flex-1 flex flex-col justify-center gap-10 relative z-10">
+         
+         {/* 2025 Current */}
+         <div className="relative">
+            <div className="flex justify-between text-base font-bold text-slate-400 mb-2">
+               <span>2025 Actual</span>
+               <span className="font-mono text-xl text-white">{isAvg ? current.toFixed(3) : current}</span>
             </div>
-            <span className="absolute bottom-0 text-sm font-bold text-slate-500">2025</span>
+            <div className="h-5 bg-slate-800 rounded-full overflow-hidden border border-white/5">
+               <div 
+                 className="h-full bg-slate-500 rounded-full" 
+                 style={{ width: `${scale(current)}%` }}
+               ></div>
+            </div>
          </div>
-         {/* 2026 Bar */}
-         <div className="flex flex-col items-center justify-end group/bar flex-1 relative h-full">
-            <div className="w-full max-w-[60px] h-[200px] bg-white/5 rounded-t-xl absolute bottom-6 left-1/2 -translate-x-1/2"></div>
-            <div className="flex flex-col items-center relative w-full max-w-[60px] z-10 mb-6">
-                <span className="text-3xl font-mono font-black text-white mb-2 drop-shadow-md scale-105 transition-transform" style={{ color: color, textShadow: `0 0 20px ${color}66` }}>
-                    {metric.predicted}
-                </span>
-                <div className="w-full rounded-t-xl relative overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all duration-1000" style={{ height: `${hPredictedPx}px`, backgroundColor: color }}>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
+
+         {/* 2026 Predicted with Range */}
+         <div className="relative">
+            <div className="flex justify-between items-end mb-3" style={{ color: color }}>
+               <span className="text-lg font-bold">2026 Forecast</span>
+               <span className="font-mono text-5xl font-black tracking-tighter" style={{ textShadow: `0 0 20px ${color}66` }}>
+                 {isAvg ? predicted.toFixed(3) : predicted}
+               </span>
             </div>
-            <span className="absolute bottom-0 text-sm font-bold text-white" style={{ color: color }}>2026</span>
+            
+            {/* Range Bar Background */}
+            <div className="h-8 bg-slate-800/50 rounded-full relative border border-white/10">
+               {/* Min-Max Range Indicator */}
+               <div 
+                 className="absolute top-1/2 -translate-y-1/2 h-3 rounded-full opacity-60"
+                 style={{ 
+                   left: `${scale(min)}%`, 
+                   width: `${scale(max) - scale(min)}%`,
+                   backgroundColor: color,
+                   boxShadow: `0 0 10px ${color}`
+                 }}
+               ></div>
+
+               {/* Predicted Dot */}
+               <div 
+                 className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white shadow-[0_0_15px_currentColor] z-10"
+                 style={{ 
+                   left: `${scale(predicted)}%`, 
+                   backgroundColor: color,
+                   color: color,
+                   transform: 'translate(-50%, -50%)'
+                 }}
+               ></div>
+
+               {/* Min/Max Labels */}
+               <div className="absolute top-10 text-xs font-mono font-bold text-slate-400 transform -translate-x-1/2" style={{ left: `${scale(min)}%` }}>
+                  {isAvg ? min.toFixed(3) : min}
+               </div>
+               <div className="absolute top-10 text-xs font-mono font-bold text-slate-400 transform -translate-x-1/2" style={{ left: `${scale(max)}%` }}>
+                  {isAvg ? max.toFixed(3) : max}
+               </div>
+            </div>
          </div>
       </div>
     </div>
   );
 };
 
-const HorizontalComparisonChart: React.FC<ComparisonChartProps> = ({ metric, color }) => {
-  const current = Number(metric.current);
-  const predicted = Number(metric.predicted);
-  const max = metric.maxScale || 1.2;
-  const pctCurrent = Math.min((current / max) * 100, 100);
-  const pctPredicted = Math.min((predicted / max) * 100, 100);
-  const diff = predicted - current;
+// 2. OPS Analysis Chart (OPS + OBP/SLG Breakdown)
+const OpsAnalysisChart: React.FC<{ metric: StatMetric; color: string }> = ({ metric, color }) => {
+  const { current, predicted, min, max, obp, slg } = metric;
+  const diff = metric.diff || 0;
+  const isUp = diff >= 0;
 
   return (
     <div 
-      className="bg-[#0f172a]/80 backdrop-blur-sm rounded-[2rem] p-10 border border-white/5 shadow-lg relative overflow-hidden flex flex-col justify-center gap-10 h-full min-h-[420px]"
-      style={{ boxShadow: `0 0 20px -10px ${color}44`, borderColor: `${color}33` }}
+      className="rounded-[2rem] p-8 flex flex-col h-full relative overflow-hidden group min-h-[400px] md:col-span-2 transition-all duration-300 hover:scale-[1.01]"
+      style={{ 
+        border: `2px solid ${color}`,
+        backgroundColor: '#0f172a',
+        boxShadow: `0 0 25px -5px ${color}55, inset 0 0 30px -10px ${color}33`
+      }}
     >
-       <div className="flex justify-between items-start">
-         <h4 className="text-3xl font-black text-white uppercase tracking-tight">{metric.label}</h4>
-         <div className="text-right flex flex-col items-end">
-            <span className="text-sm text-slate-500 font-mono mb-2 tracking-widest font-bold">2026 PREDICTION</span>
-            <div className="flex items-center gap-4">
-               <span className="text-6xl font-black text-white" style={{ color: color, textShadow: `0 0 20px ${color}66` }}>
-                 {metric.predicted}
-               </span>
-               <div className={`px-4 py-2 rounded-xl text-lg font-black border-2 ${diff >= 0 ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-                 {diff >= 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(3)}
-               </div>
-            </div>
-         </div>
-       </div>
+       {/* Inner Neon Gradient */}
+       <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${color}1a 0%, transparent 60%)` }}></div>
 
-       <div className="space-y-8 w-full mt-2">
-          {/* Current */}
-          <div className="relative w-full">
-             <div className="flex justify-between text-sm font-bold text-slate-400 mb-3">
-               <span>2025 SEASON</span>
-               <span className="font-mono text-lg">{metric.current}</span>
-             </div>
-             <div className="w-full h-5 bg-slate-800/50 rounded-full overflow-hidden border border-white/5">
-               <div style={{ width: `${pctCurrent}%` }} className="h-full bg-slate-500 rounded-full"></div>
+       <div className="flex flex-col md:flex-row gap-10 h-full relative z-10">
+          
+          {/* Left: OPS Main Stat */}
+          <div className="flex-1 flex flex-col justify-center items-center border-b md:border-b-0 md:border-r border-white/10 pb-8 md:pb-0 md:pr-10">
+             <h4 className="text-4xl font-black text-white uppercase tracking-tight mb-2">OPS</h4>
+             <span className="text-base text-slate-400 font-bold uppercase tracking-widest mb-8">On-base + Slugging</span>
+             
+             <div className="relative flex flex-col items-center">
+                <span className="text-8xl font-black text-white tracking-tighter mb-4" style={{ textShadow: `0 0 40px ${color}66` }}>
+                   {Number(predicted).toFixed(3)}
+                </span>
+                
+                <div className={`flex items-center gap-3 text-2xl font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`}>
+                   <span>{isUp ? '▲' : '▼'}</span>
+                   <span>{Math.abs(diff).toFixed(3)}</span>
+                   <span className="text-slate-500 text-base ml-2">(vs {Number(current).toFixed(3)})</span>
+                </div>
+
+                {/* Range */}
+                <div className="mt-8 flex items-center gap-4 bg-white/5 px-6 py-3 rounded-full border border-white/5">
+                   <span className="text-sm text-slate-500 font-bold uppercase">Range</span>
+                   <span className="text-2xl font-mono font-bold text-slate-300">{Number(min).toFixed(3)}</span>
+                   <div className="w-16 h-1.5 bg-gradient-to-r from-slate-600 to-slate-400 rounded-full"></div>
+                   <span className="text-2xl font-mono font-bold text-white">{Number(max).toFixed(3)}</span>
+                </div>
              </div>
           </div>
 
-          {/* Predicted */}
-          <div className="relative w-full">
-             <div className="flex justify-between text-sm font-bold mb-3" style={{ color: color }}>
-               <span>2026 FORECAST</span>
-               <span className="font-mono text-lg">{metric.predicted}</span>
-             </div>
-             <div className="w-full h-8 bg-slate-800/50 rounded-full overflow-hidden shadow-inner relative border border-white/10">
-                <div style={{ width: `${pctPredicted}%`, backgroundColor: color }} className="h-full rounded-full transition-all duration-1000 relative z-10 shadow-[0_0_20px_currentColor]">
-                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"></div>
-                </div>
+          {/* Right: OBP & SLG Breakdown */}
+          <div className="flex-1 flex flex-col justify-center gap-10">
+             {/* OBP */}
+             {obp && (
+               <div>
+                  <div className="flex justify-between items-end mb-3">
+                     <span className="text-2xl font-bold text-slate-300">OBP (출루율)</span>
+                     <div className="text-right">
+                        <span className="text-4xl font-mono font-black text-white" style={{ color: color, textShadow: `0 0 15px ${color}44` }}>{obp.predicted.toFixed(3)}</span>
+                        <span className="text-sm text-slate-500 ml-3 font-bold">({obp.min.toFixed(3)} ~ {obp.max.toFixed(3)})</span>
+                     </div>
+                  </div>
+                  <div className="w-full h-4 bg-slate-800 rounded-full overflow-hidden relative border border-white/5">
+                     <div className="absolute h-full bg-slate-600 rounded-full opacity-30" style={{ width: `${(obp.current / 0.6) * 100}%` }}></div>
+                     <div className="absolute h-full rounded-full shadow-[0_0_15px_currentColor]" style={{ width: `${(obp.predicted / 0.6) * 100}%`, backgroundColor: color }}></div>
+                  </div>
+               </div>
+             )}
+
+             {/* SLG */}
+             {slg && (
+               <div>
+                  <div className="flex justify-between items-end mb-3">
+                     <span className="text-2xl font-bold text-slate-300">SLG (장타율)</span>
+                     <div className="text-right">
+                        <span className="text-4xl font-mono font-black text-white" style={{ color: color, textShadow: `0 0 15px ${color}44` }}>{slg.predicted.toFixed(3)}</span>
+                        <span className="text-sm text-slate-500 ml-3 font-bold">({slg.min.toFixed(3)} ~ {slg.max.toFixed(3)})</span>
+                     </div>
+                  </div>
+                  <div className="w-full h-4 bg-slate-800 rounded-full overflow-hidden relative border border-white/5">
+                     <div className="absolute h-full bg-slate-600 rounded-full opacity-30" style={{ width: `${(slg.current / 1.0) * 100}%` }}></div>
+                     <div className="absolute h-full rounded-full shadow-[0_0_15px_currentColor]" style={{ width: `${(slg.predicted / 1.0) * 100}%`, backgroundColor: color }}></div>
+                  </div>
+               </div>
+             )}
+
+             <div className="mt-2 p-5 bg-white/5 rounded-2xl border border-white/5 text-base text-slate-400 leading-relaxed">
+                <p>
+                   <span className="text-white font-bold">Insight:</span> OBP와 SLG의 예측 범위를 종합하여 산출된 OPS입니다. 
+                   타격 생산성의 핵심 지표로 활용됩니다.
+                </p>
              </div>
           </div>
        </div>
@@ -293,117 +398,115 @@ const HorizontalComparisonChart: React.FC<ComparisonChartProps> = ({ metric, col
   );
 };
 
+
 // --- PITCHER CHART (NEW) ---
 
-interface PitcherFutureCardProps {
-  metric: StatMetric;
-  color: string;
-}
+// 투수용 미래 가치 시각화 카드 (Rank, Percentile, Elite Prob)
+const PitcherRankCard: React.FC<{ metric: StatMetric; color: string }> = ({ metric, color }) => {
+  const { probElite, rolePercentileTop, roleRank, roleTotal } = metric;
+  
+  // Safe defaults
+  const prob = probElite || 0;
+  const percentile = rolePercentileTop || 100;
+  const rank = roleRank || 0;
+  const total = roleTotal || 0;
 
-// 투수용 미래 가치 시각화 카드
-const PitcherFutureCard: React.FC<PitcherFutureCardProps> = ({ metric, color }) => {
-  const probability = Number(metric.predicted); // 0.0 ~ 1.0
-  const percentage = Math.min(Math.max(probability * 100, 5), 100); // 5% ~ 100%
-
-  // Tier Calculation
+  // Tier Logic
   let tierLabel = "LOW";
-  let tierSubText = "Developing";
   let tierColor = "#94a3b8"; // Slate 400
-
-  if (probability >= 0.70) {
-    tierLabel = "ELITE";
-    tierSubText = "Top Class Potential";
-    tierColor = "#06b6d4"; // Cyan (Diamond)
-  } else if (probability >= 0.50) {
-    tierLabel = "POTENTIAL";
-    tierSubText = "High Upside";
-    tierColor = "#ec4899"; // Pink (Gold equivalent vibe)
-  } else if (probability >= 0.30) {
-    tierLabel = "AVERAGE";
-    tierSubText = "League Average";
-    tierColor = "#22c55e"; // Green
-  } else {
-    tierLabel = "LOW";
-    tierSubText = "Risk Factor";
-    tierColor = "#64748b"; // Slate 500
+  
+  if (prob >= 0.7) {
+     tierLabel = "ELITE";
+     tierColor = "#06b6d4"; // Cyan
+  } else if (prob >= 0.4) {
+     tierLabel = "POTENTIAL";
+     tierColor = "#ec4899"; // Pink
+  } else if (prob >= 0.2) {
+     tierLabel = "AVERAGE";
+     tierColor = "#22c55e"; // Green
   }
 
   return (
     <div 
-      className="bg-[#0a0f1e]/90 backdrop-blur-sm rounded-[2.5rem] p-10 border border-white/5 flex flex-col justify-between h-full min-h-[420px] relative overflow-hidden group shadow-xl"
-      style={{ borderColor: `${tierColor}44` }}
+      className="rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between h-full min-h-[420px] relative overflow-hidden group shadow-xl col-span-full"
+      style={{ 
+        border: `2px solid ${tierColor}`,
+        backgroundColor: '#0a0f1e',
+        boxShadow: `0 0 30px -5px ${tierColor}55, inset 0 0 40px -10px ${tierColor}33`
+      }}
     >
-      {/* Background Tier Glow */}
-      <div 
-        className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[80px] opacity-20 pointer-events-none transition-colors duration-700"
-        style={{ backgroundColor: tierColor }}
-      ></div>
+       {/* Inner Neon Gradient */}
+       <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${tierColor}1a 0%, transparent 60%)` }}></div>
 
-      {/* Header */}
-      <div className="relative z-10">
-        <h4 
-          className="text-xl font-bold text-white uppercase tracking-widest mb-2"
-          style={{ textShadow: `0 0 15px ${color}` }} // 팀 컬러 네온 효과
-        >
-          {metric.label} Future Value
-        </h4>
-        <div className="flex items-baseline gap-3">
-           <span className="text-7xl font-black text-white tracking-tighter">{metric.current}</span>
-           <span className="text-lg font-bold text-slate-400">2025년 성적</span>
-        </div>
-      </div>
+       {/* Background Effects */}
+       <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full blur-[100px] opacity-20 pointer-events-none" style={{ backgroundColor: tierColor }}></div>
 
-      {/* Probability Gauge */}
-      <div className="relative z-10 mt-8">
-         <div className="flex justify-between items-end mb-4">
-            <div className="flex flex-col">
-               <span className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">2026 Elite Probability</span>
-               <span className="text-5xl font-black italic tracking-tight" style={{ color: tierColor, textShadow: `0 0 15px ${tierColor}66` }}>
-                 {(probability * 100).toFixed(1)}%
-               </span>
-            </div>
-            <div className="text-right">
-               <span className={`px-5 py-2 rounded-xl text-base font-black uppercase tracking-widest border bg-black/30`} style={{ borderColor: tierColor, color: tierColor }}>
-                 {tierLabel} TIER
-               </span>
-            </div>
-         </div>
+       {/* Left: Elite Probability Circle */}
+       <div className="flex-1 flex flex-col items-center justify-center relative z-10 mb-10 md:mb-0">
+          <div className="relative w-64 h-64 flex items-center justify-center">
+             {/* Circular Progress Background */}
+             <svg className="w-full h-full transform -rotate-90">
+                <circle cx="128" cy="128" r="110" stroke="#1e293b" strokeWidth="12" fill="none" />
+                <circle 
+                  cx="128" cy="128" r="110" 
+                  stroke={tierColor} 
+                  strokeWidth="12" 
+                  fill="none" 
+                  strokeDasharray={691} // 2 * PI * 110
+                  strokeDashoffset={691 - (691 * prob)}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000 ease-out drop-shadow-[0_0_15px_currentColor]"
+                />
+             </svg>
+             <div className="absolute flex flex-col items-center">
+                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Elite Prob</span>
+                <span className="text-6xl font-black text-white tracking-tighter">{(prob * 100).toFixed(1)}%</span>
+                <span className="mt-2 px-4 py-1 rounded-full text-xs font-black uppercase bg-white/10 border border-white/10" style={{ color: tierColor }}>
+                   {tierLabel} TIER
+                </span>
+             </div>
+          </div>
+       </div>
 
-         {/* Progress Bar Container */}
-         <div className="h-8 w-full bg-slate-800/50 rounded-full overflow-hidden border border-white/5 relative">
-            {/* Grid Lines */}
-            <div className="absolute inset-0 flex justify-between px-1 z-20 pointer-events-none">
-               <div className="w-[1px] h-full bg-black/20"></div>
-               <div className="w-[1px] h-full bg-black/20"></div>
-               <div className="w-[1px] h-full bg-black/20"></div>
-               <div className="w-[1px] h-full bg-black/20"></div>
-            </div>
-            
-            {/* Fill Bar - UNIFIED COLOR (Cyan/Blue Gradient) */}
-            <div 
-              className="h-full rounded-full transition-all duration-1000 relative z-10 shadow-[0_0_20px_rgba(34,211,238,0.5)]"
-              style={{ width: `${percentage}%` }}
-            >
-               {/* 통일된 바 색상 */}
-               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
-               <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent"></div>
-            </div>
-         </div>
-         
-         <div className="flex justify-between text-sm font-bold text-slate-500 mt-3 uppercase tracking-widest">
-            <span>Low</span>
-            <span>Average</span>
-            <span>Potential</span>
-            <span>Elite</span>
-         </div>
-      </div>
+       {/* Right: Ranking & Percentile */}
+       <div className="flex-1 w-full md:pl-10 md:border-l border-white/10 flex flex-col justify-center gap-10 relative z-10">
+          
+          {/* Percentile */}
+          <div>
+             <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">League Percentile</h4>
+             <div className="flex items-baseline gap-3">
+                <span className="text-6xl font-black text-white">Top {percentile.toFixed(2)}%</span>
+             </div>
+             <div className="w-full h-4 bg-slate-800 rounded-full mt-4 overflow-hidden relative">
+                {/* Inverted scale: Lower percentile is better (left side) */}
+                <div 
+                  className="absolute h-full rounded-full shadow-[0_0_15px_currentColor]" 
+                  style={{ 
+                     left: 0,
+                     // Top 1% = 99% Quality. Top 99% = 1% Quality.
+                     width: `${Math.max(100 - percentile, 0)}%`,
+                     backgroundColor: tierColor 
+                  }}
+                ></div>
+             </div>
+             <p className="text-slate-400 text-sm mt-2">
+                동일 보직 선수들 중 상위 <span className="text-white font-bold">{percentile}%</span> 수준의 성적이 예측됩니다.
+             </p>
+          </div>
 
-      <div className="relative z-10 mt-6 pt-6 border-t border-white/5">
-         <p className="text-base text-slate-400 font-medium flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: tierColor }}></span>
-            Analysis: <span className="text-slate-200 font-bold">{tierSubText}</span>
-         </p>
-      </div>
+          {/* Rank */}
+          <div>
+             <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Position Rank</h4>
+             <div className="flex items-end gap-2">
+                <span className="text-5xl font-black text-white">{rank}</span>
+                <span className="text-2xl font-bold text-slate-500 mb-2">/ {total}</span>
+             </div>
+             <p className="text-slate-400 text-sm mt-2">
+                전체 {total}명의 해당 보직 선수 중 예상 순위입니다.
+             </p>
+          </div>
+
+       </div>
     </div>
   );
 };
@@ -430,7 +533,6 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
       setLoading(true);
       
       const teamName = KOREAN_TEAM_NAMES[selectedTeamCode] || selectedTeamCode;
-      // API Call: type 파라미터 추가 (hitter / pitcher)
       const typeParam = activeTab === 'Batter' ? 'hitter' : 'pitcher';
       
       try {
@@ -442,12 +544,11 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
 
         const data: ServerPlayerDto[] = await response.json();
         
-        // Map Server DTO to Frontend State
         const mappedRoster: PlayerRosterItem[] = data.map(item => ({
           id: item.playerId,
           name: item.name,
           backNumber: item.back_number,
-          role: activeTab, // 현재 탭 기준으로 Role 설정
+          role: activeTab, 
           positionDetail: (item.position_type || (activeTab === 'Batter' ? '내야수' : '투수')) as PositionDetail
         }));
 
@@ -464,7 +565,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
     };
 
     fetchRoster();
-  }, [selectedTeamCode, activeTab]); // activeTab 변경 시에도 재호출
+  }, [selectedTeamCode, activeTab]);
 
   // Handle Player Click -> Fetch Prediction
   const handlePlayerClick = async (player: PlayerRosterItem) => {
@@ -485,48 +586,65 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
       let metrics: StatMetric[] = [];
 
       if (isBatter) {
-        // [타자 로직] 기존 유지
-        const predAvg = data.predAvg || 0;
-        const avgDiff = data.avgDiff || 0;
-        const currentAvg = data.currentAvg || (predAvg - avgDiff);
-
-        const predHr = data.predHr || 0;
-        const hrDiff = data.hrDiff || 0;
-        const currentHr = data.currentHr || (predHr - hrDiff);
-
-        const predOps = data.predOps || 0;
-        const opsDiff = data.opsDiff || 0;
-        const currentOps = data.currentOps || (predOps - opsDiff);
-
-        metrics = [
-          { label: 'AVG (타율)', current: currentAvg.toFixed(3), predicted: predAvg.toFixed(3), diff: avgDiff, maxScale: 0.400 },
-          { label: 'HR (홈런)', current: currentHr, predicted: predHr, diff: hrDiff, unit: '개', maxScale: 50 },
-          { label: 'OPS (출루+장타)', current: currentOps.toFixed(3), predicted: predOps.toFixed(3), diff: opsDiff, maxScale: 1.2 },
-        ];
-      } else {
-        // [투수 로직] 업데이트: 확률 기반 데이터 매핑
-        // DTO 필드: currentEra, currentWhip, eraEliteProb, whipEliteProb
+        // [타자 로직] Updated for Range & OPS Breakdown
         
-        const currentEra = data.currentEra ?? 0;
-        const eraProb = data.eraEliteProb ?? 0; // 0.0 ~ 1.0
+        // 1. AVG
+        metrics.push({
+           type: 'avg',
+           label: 'AVG (타율)',
+           current: data.currAvg,
+           predicted: data.predAvg,
+           diff: data.avgDiff,
+           min: data.avgMin,
+           max: data.avgMax
+        });
 
-        const currentWhip = data.currentWhip ?? 0;
-        const whipProb = data.whipEliteProb ?? 0; // 0.0 ~ 1.0
+        // 2. HR
+        metrics.push({
+           type: 'hr',
+           label: 'HR (홈런)',
+           current: data.currHr,
+           predicted: data.predHr,
+           diff: data.hrDiff,
+           min: data.hrMin,
+           max: data.hrMax
+        });
 
-        metrics = [
-          { 
-            label: 'ERA', 
-            current: currentEra.toFixed(2), 
-            predicted: eraProb, // 여기서는 확률값을 저장
-            isProbability: true 
-          },
-          { 
-            label: 'WHIP', 
-            current: currentWhip.toFixed(2), 
-            predicted: whipProb, // 여기서는 확률값을 저장
-            isProbability: true 
-          },
-        ];
+        // 3. OPS (with OBP/SLG)
+        metrics.push({
+           type: 'ops',
+           label: 'OPS',
+           current: data.currOps,
+           predicted: data.predOps,
+           diff: data.opsDiff,
+           min: data.opsMin,
+           max: data.opsMax,
+           obp: {
+              current: data.currObp || 0,
+              predicted: data.predObp || 0,
+              min: data.obpMin || 0,
+              max: data.obpMax || 0,
+              diff: data.diffObp || 0
+           },
+           slg: {
+              current: data.currSlg || 0,
+              predicted: data.predSlg || 0,
+              min: data.slgMin || 0,
+              max: data.slgMax || 0,
+              diff: data.diffSlg || 0
+           }
+        });
+
+      } else {
+        // [투수 로직] Updated for Rank/Percentile
+        metrics.push({
+           type: 'pitcher',
+           label: 'Future Value',
+           probElite: data.probElite,
+           rolePercentileTop: data.rolePercentileTop,
+           roleRank: data.roleRank,
+           roleTotal: data.roleTotal
+        });
       }
 
       setPrediction({
@@ -550,6 +668,12 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
     setViewState('roster');
     setSelectedPlayer(null);
     setPrediction(null);
+  };
+
+  // Helper to clean report text (max 1 empty line)
+  const cleanReportText = (text: string) => {
+    if (!text) return "";
+    return text.replace(/\n{3,}/g, '\n\n').trim();
   };
 
   // Styles Helpers
@@ -583,7 +707,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
         {selectedTeamCode}
       </div>
 
-      {/* Main Container - Extended Width */}
+      {/* Main Container */}
       <div className="w-[95%] max-w-[1600px] mx-auto px-4 md:px-8 py-12">
         
         {/* Top Navigation / Header */}
@@ -612,12 +736,10 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
           </button>
         </div>
 
-        {/* AI Notice Box - Improved Design (2-Column & Left Align) */}
+        {/* AI Notice Box */}
         <div className="w-full max-w-5xl mx-auto mb-16 relative group">
            <div className="absolute -inset-1 bg-gradient-to-r from-brand-glow/20 to-transparent blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
            <div className="relative bg-[#0f172a]/80 backdrop-blur-xl border border-brand-glow/20 rounded-[2rem] p-10 text-left shadow-2xl flex flex-col md:flex-row gap-8 items-start">
-              
-              {/* Left: Title/Badge */}
               <div className="flex-shrink-0 md:w-48">
                  <div className="inline-block">
                      <div className="w-12 h-1 bg-brand-glow rounded-full mb-2"></div>
@@ -625,16 +747,14 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                      <span className="text-white font-black tracking-tighter uppercase text-2xl block">AI MODEL</span>
                  </div>
               </div>
-              
-              {/* Right: Text Body */}
               <div className="flex-1">
                   <p className="text-slate-300 leading-relaxed text-lg font-light tracking-wide word-keep mb-6">
-                     지난 10년간 KBO 리그를 거쳐간 <span className="font-bold text-white">모든 선수의 커리어 데이터</span>를 정밀 학습한 
-                     <span className="text-brand-glow font-bold"> '더그아웃'</span>만의 독자적인 머신러닝 모델 분석 결과입니다.
+                     지난 10년간 KBO 리그의 <span className="font-bold text-white">방대한 빅데이터</span>를 정밀 학습한 
+                     <span className="text-brand-glow font-bold"> '더그아웃'</span>만의 <span className="text-brand-glow font-bold">독자적인 AI 분석 모델</span>의 결과입니다.
                   </p>
                   <p className="text-slate-300 leading-relaxed text-lg font-light tracking-wide word-keep">
-                     우리는 선수의 과거 성적뿐만 아니라 신체적 변화의 핵심인 <span className="text-white font-bold">에이징 커브 패턴</span>을 심층 분석하여, 
-                     2026년 시즌에 펼쳐질 이 선수의 가장 <span className="text-brand-glow font-bold">현실적이고도 과학적인 퍼포먼스 궤적</span>을 예측했습니다.
+                     단순히 미래의 숫자를 맞히는 것을 넘어, 수백 가지 지표 중 무엇이 선수의 성적을 결정짓는 <span className="text-white font-bold">핵심 동력</span>인지를 심층 분석했습니다. 
+                     2026년 시즌, 이 선수의 성적을 뒤바꿀 <span className="text-brand-glow font-bold">숨겨진 원인</span>과 <span className="text-white font-bold">현실적인 퍼포먼스 궤적</span>을 지금 확인해 보세요.
                   </p>
               </div>
            </div>
@@ -652,7 +772,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                    <button
                      key={team.code}
                      onClick={() => setSelectedTeamCode(team.code)}
-                     disabled={viewState === 'detail'} // Disable while in detail view
+                     disabled={viewState === 'detail'}
                      className={`
                        flex-shrink-0 flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 ease-out w-auto lg:w-full group relative overflow-hidden
                        ${selectedTeamCode === team.code 
@@ -679,7 +799,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
           {/* Right Content */}
           <div className="flex-1 min-h-[800px] relative">
             
-            {/* Team Banner (Always Visible) */}
+            {/* Team Banner */}
             <div className="mb-10 animate-fade-in-up">
               <div 
                 className="rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden shadow-2xl group transition-all duration-500"
@@ -700,7 +820,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
               </div>
             </div>
 
-            {/* CONTENT AREA: Switch between ROSTER and DETAIL */}
+            {/* CONTENT AREA */}
             {viewState === 'roster' && (
               <div className="animate-slide-right" key={`${selectedTeamCode}-${activeTab}`}>
                 {/* Tabs */}
@@ -719,7 +839,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                   </button>
                 </div>
 
-                {/* Grid - Dense & Small Cards */}
+                {/* Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {loading ? (
                     [1, 2, 3, 4, 5, 6, 7, 8].map(i => (
@@ -745,9 +865,17 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
               </div>
             )}
 
-            {/* DETAIL VIEW: Prediction Analysis */}
+            {/* DETAIL VIEW */}
             {viewState === 'detail' && selectedPlayer && (
-              <div className="animate-scale-up space-y-8">
+              <div className="animate-scale-up space-y-8 relative">
+                {/* Dynamic Background for Detail View */}
+                <div 
+                  className="absolute top-20 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl -z-10 opacity-30 pointer-events-none blur-[120px]"
+                  style={{ 
+                    background: `radial-gradient(circle at center, ${activeColor} 0%, transparent 70%)` 
+                  }}
+                ></div>
+
                 {/* Back Button */}
                 <button 
                   onClick={handleBackToRoster}
@@ -772,9 +900,16 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                   <>
                   {/* 1. Header: Player Info */}
                   <div 
-                    className="relative p-10 md:p-12 bg-[#0a0f1e] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl group"
-                    style={{ borderColor: `${activeColor}44`, boxShadow: `0 20px 50px -20px ${activeColor}22` }}
+                    className="relative p-10 md:p-12 rounded-[3rem] overflow-hidden shadow-2xl group"
+                    style={{ 
+                      border: `2px solid ${activeColor}`,
+                      backgroundColor: '#0a0f1e',
+                      boxShadow: `0 0 40px -10px ${activeColor}44, inset 0 0 50px -20px ${activeColor}22`
+                    }}
                   >
+                      {/* Inner Neon Gradient */}
+                      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${activeColor}1a 0%, transparent 60%)` }}></div>
+
                       <div className="absolute top-0 right-0 w-96 h-96 opacity-10 rounded-full blur-[120px] pointer-events-none" style={{ backgroundColor: activeColor }}></div>
                       
                       <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
@@ -798,28 +933,33 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                       </div>
                   </div>
 
-                  {/* 2. Charts Grid (Top Row) */}
-                  <div className={`grid grid-cols-1 ${prediction.role === 'Pitcher' ? 'lg:grid-cols-2' : 'xl:grid-cols-3'} gap-6`}>
+                  {/* 2. Charts Grid */}
+                  <div className={`grid grid-cols-1 ${prediction.role === 'Pitcher' ? 'grid-cols-1' : 'md:grid-cols-2'} gap-6`}>
                      {prediction.metrics.map((metric, idx) => (
-                       <div key={idx} className="w-full">
-                          {prediction.role === 'Pitcher' ? (
-                            <PitcherFutureCard metric={metric} color={activeColor} />
+                       <React.Fragment key={idx}>
+                          {metric.type === 'pitcher' ? (
+                            <PitcherRankCard metric={metric} color={activeColor} />
+                          ) : metric.type === 'ops' ? (
+                            <OpsAnalysisChart metric={metric} color={activeColor} />
                           ) : (
-                            idx === prediction.metrics.length - 1 ? (
-                              <HorizontalComparisonChart metric={metric} color={activeColor} />
-                            ) : (
-                              <VerticalComparisonChart metric={metric} color={activeColor} />
-                            )
+                            <BatterRangeChart metric={metric} color={activeColor} />
                           )}
-                       </div>
+                       </React.Fragment>
                      ))}
                   </div>
 
-                  {/* 3. Feedback Report (Bottom Row - Full Width) */}
+                  {/* 3. Feedback Report */}
                   <div 
-                    className="flex-1 p-10 md:p-14 bg-[#0f172a] border border-white/10 rounded-[3rem] relative overflow-hidden shadow-2xl"
-                    style={{ borderColor: `${activeColor}33`, boxShadow: `0 0 40px -10px ${activeColor}11` }}
+                    className="flex-1 p-10 md:p-14 rounded-[3rem] relative overflow-hidden shadow-2xl"
+                    style={{ 
+                      border: `2px solid ${activeColor}`,
+                      backgroundColor: '#0f172a',
+                      boxShadow: `0 0 40px -10px ${activeColor}44, inset 0 0 50px -20px ${activeColor}22`
+                    }}
                   >
+                    {/* Inner Neon Gradient */}
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${activeColor}1a 0%, transparent 60%)` }}></div>
+
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-white/5 to-transparent rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-50"></div>
                     
@@ -834,18 +974,23 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                           </h4>
                           <span className="text-xs text-slate-500 font-bold uppercase tracking-[0.3em] pl-1">Advanced AI Analysis</span>
                         </div>
-                        
-                        {/* Confidence Level 제거 */}
                       </div>
                       
                       <div className="relative pl-0 md:pl-4">
                          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-white/10 to-transparent hidden md:block" style={{ backgroundColor: `${activeColor}44` }}></div>
                          
                          <div className="md:pl-10">
-                           {/* 폰트 크기 확대 */}
-                           <p className="text-slate-200 leading-loose font-normal text-2xl md:text-3xl whitespace-pre-line tracking-wide font-sans text-justify">
-                             {prediction.aiFeedback}
-                           </p>
+                           {/* Font size adjusted to text-xl as requested */}
+                           <div className="text-slate-200 leading-relaxed font-medium text-xl tracking-wide font-sans text-justify">
+                             <ReactMarkdown
+                               components={{
+                                 strong: ({node, ...props}) => <span className="font-black" style={{ color: activeColor }} {...props} />,
+                                 p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />
+                               }}
+                             >
+                               {cleanReportText(prediction.aiFeedback)}
+                             </ReactMarkdown>
+                           </div>
                          </div>
                       </div>
                     </div>
@@ -861,39 +1006,5 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
     </div>
   );
 };
-
-// --- MOCK DATA GENERATORS (COMMENTED OUT) ---
-/*
-const generateMockRoster = (teamCode: string): PlayerRosterItem[] => {
-  const baseId = teamCode.length * 100;
-  return [
-    { id: baseId + 1, name: '김도영', backNumber: 5, role: 'Batter', positionDetail: '내야수' },
-    // ...
-  ];
-};
-
-const generateMockPrediction = (player: PlayerRosterItem): PredictionResult => {
-  // ...
-};
-*/
-
-// 임시 Roster Fetcher (실제로는 fetchRoster 내부 로직 사용)
-// 기존 useEffect에서 generateMockRoster 호출 부분을 API 호출로 변경했으므로 이 함수들은 더 이상 사용되지 않음.
-
-const generateMockRoster = (teamCode: string): PlayerRosterItem[] => {
-    // MOCK DATA REMOVED / COMMENTED OUT
-    return [];
-}
-
-const generateMockPrediction = (player: PlayerRosterItem): PredictionResult => {
-    // MOCK DATA REMOVED / COMMENTED OUT
-    return {
-        playerId: 0,
-        playerName: "",
-        metrics: [],
-        aiFeedback: "",
-        role: 'Batter'
-    };
-}
 
 export default PlayerPrediction;
