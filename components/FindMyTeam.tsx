@@ -1,6 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { TEAMS } from '../constants'; // 팀 정보 및 컬러 매핑을 위해 Import
+import ReactMarkdown from 'react-markdown';
 
 const API_BASE_URL = "https://dugout.cloud";
 
@@ -303,9 +304,15 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
                    Matching Analysis
                  </h4>
                  
-                 <p className="text-slate-100 leading-relaxed text-xl font-light whitespace-pre-line flex-1">
-                   {reason}
-                 </p>
+                 <div className="text-slate-100 leading-relaxed text-xl font-light whitespace-pre-line flex-1">
+                   <ReactMarkdown
+                     components={{
+                       strong: ({node, ...props}) => <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400" {...props} />
+                     }}
+                   >
+                     {reason}
+                   </ReactMarkdown>
+                 </div>
                </div>
 
                <div className="flex flex-col sm:flex-row gap-5 pt-4">

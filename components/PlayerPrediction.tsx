@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import Modal from './Modal';
 import { TEAMS } from '../constants';
 
 const API_BASE_URL = "https://dugout.cloud";
@@ -33,6 +34,7 @@ const KOREAN_TO_CODE: Record<string, string> = {
   'NC 다이노스': 'NC',
   '키움 히어로즈': 'KIWOOM'
 };
+
 
 // --- TYPES ---
 type Role = 'Pitcher' | 'Batter';
@@ -97,6 +99,12 @@ interface ServerPredictionDto {
   roleRank?: number;             // 보직 내 순위
   roleTotal?: number;            // 보직 내 전체 인원
 
+  era2025?: number;           // 2025년 평균자책점 (ERA)
+  fip2025?: number;           // 2025년 수비무관 투구지표 (FIP)
+  ip2025?: number;            // 2025년 소화 이닝 (IP)
+  whip2025?: number;          // 2025년 이닝당 출루허용률 (WHIP)
+  role?: string;              // 투수 보직 (예: SP, RP)
+
   aiReport: string;
 }
 
@@ -121,6 +129,13 @@ interface StatMetric {
   rolePercentileTop?: number;
   roleRank?: number;
   roleTotal?: number;
+  
+  // New Pitcher Fields
+  era2025?: number;
+  fip2025?: number;
+  ip2025?: number;
+  whip2025?: number;
+  role?: string;
 }
 
 interface PredictionResult {
@@ -220,13 +235,13 @@ const BatterRangeChart: React.FC<{ metric: StatMetric; color: string }> = ({ met
     <div 
       className="rounded-[2rem] p-8 flex flex-col h-full relative overflow-hidden group min-h-[400px] transition-all duration-300 hover:scale-[1.02]"
       style={{ 
-        border: `2px solid ${color}`,
-        backgroundColor: '#0f172a',
-        boxShadow: `0 0 25px -5px ${color}55, inset 0 0 30px -10px ${color}33`
+        border: `1px solid ${color}44`,
+        background: `linear-gradient(145deg, ${color}11 0%, #0f172a 100%)`,
+        boxShadow: `0 0 30px -5px ${color}33, inset 0 0 20px -10px ${color}22`
       }}
     >
       {/* Inner Neon Gradient */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${color}1a 0%, transparent 60%)` }}></div>
+      <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at top right, ${color}15 0%, transparent 70%)` }}></div>
 
       {/* Header */}
       <div className="flex justify-between items-start mb-10 relative z-10">
@@ -314,13 +329,13 @@ const OpsAnalysisChart: React.FC<{ metric: StatMetric; color: string }> = ({ met
     <div 
       className="rounded-[2rem] p-8 flex flex-col h-full relative overflow-hidden group min-h-[400px] md:col-span-2 transition-all duration-300 hover:scale-[1.01]"
       style={{ 
-        border: `2px solid ${color}`,
-        backgroundColor: '#0f172a',
-        boxShadow: `0 0 25px -5px ${color}55, inset 0 0 30px -10px ${color}33`
+        border: `1px solid ${color}44`,
+        background: `linear-gradient(145deg, ${color}11 0%, #0f172a 100%)`,
+        boxShadow: `0 0 30px -5px ${color}33, inset 0 0 20px -10px ${color}22`
       }}
     >
        {/* Inner Neon Gradient */}
-       <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${color}1a 0%, transparent 60%)` }}></div>
+       <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at top right, ${color}15 0%, transparent 70%)` }}></div>
 
        <div className="flex flex-col md:flex-row gap-10 h-full relative z-10">
           
@@ -401,15 +416,28 @@ const OpsAnalysisChart: React.FC<{ metric: StatMetric; color: string }> = ({ met
 
 // --- PITCHER CHART (NEW) ---
 
-// 투수용 미래 가치 시각화 카드 (Rank, Percentile, Elite Prob)
+// 투수용 미래 가치 시각화 카드 (Rank, Percentile, Elite Prob, 2025 Stats)
 const PitcherRankCard: React.FC<{ metric: StatMetric; color: string }> = ({ metric, color }) => {
-  const { probElite, rolePercentileTop, roleRank, roleTotal } = metric;
+  const { probElite, rolePercentileTop, roleRank, roleTotal, era2025, fip2025, ip2025, whip2025, role } = metric;
   
   // Safe defaults
   const prob = probElite || 0;
   const percentile = rolePercentileTop || 100;
   const rank = roleRank || 0;
   const total = roleTotal || 0;
+
+  // Format IP to baseball notation (e.g., 70.667 -> 70 2/3)
+  const formatIp = (ip: number | undefined) => {
+    if (ip === undefined) return "-";
+    const integerPart = Math.floor(ip);
+    const decimalPart = ip - integerPart;
+    // Calculate thirds: .0 -> 0, .333 -> 1, .666 -> 2
+    const thirds = Math.round(decimalPart * 3);
+    
+    if (thirds === 0) return `${integerPart}`;
+    if (thirds === 3) return `${integerPart + 1}`; // Should handle rounding up if close to 1
+    return `${integerPart} ${thirds}/3`;
+  };
 
   // Tier Logic
   let tierLabel = "LOW";
@@ -428,84 +456,109 @@ const PitcherRankCard: React.FC<{ metric: StatMetric; color: string }> = ({ metr
 
   return (
     <div 
-      className="rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between h-full min-h-[420px] relative overflow-hidden group shadow-xl col-span-full"
+      className="rounded-[2.5rem] p-10 flex flex-col h-full min-h-[500px] relative overflow-hidden group shadow-xl col-span-full"
       style={{ 
-        border: `2px solid ${tierColor}`,
-        backgroundColor: '#0a0f1e',
-        boxShadow: `0 0 30px -5px ${tierColor}55, inset 0 0 40px -10px ${tierColor}33`
+        border: `1px solid ${tierColor}44`,
+        background: `linear-gradient(145deg, ${tierColor}11 0%, #0a0f1e 100%)`,
+        boxShadow: `0 0 40px -10px ${tierColor}33, inset 0 0 30px -10px ${tierColor}22`
       }}
     >
        {/* Inner Neon Gradient */}
-       <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${tierColor}1a 0%, transparent 60%)` }}></div>
+       <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at top right, ${tierColor}15 0%, transparent 70%)` }}></div>
 
        {/* Background Effects */}
        <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full blur-[100px] opacity-20 pointer-events-none" style={{ backgroundColor: tierColor }}></div>
 
-       {/* Left: Elite Probability Circle */}
-       <div className="flex-1 flex flex-col items-center justify-center relative z-10 mb-10 md:mb-0">
-          <div className="relative w-64 h-64 flex items-center justify-center">
-             {/* Circular Progress Background */}
-             <svg className="w-full h-full transform -rotate-90">
-                <circle cx="128" cy="128" r="110" stroke="#1e293b" strokeWidth="12" fill="none" />
-                <circle 
-                  cx="128" cy="128" r="110" 
-                  stroke={tierColor} 
-                  strokeWidth="12" 
-                  fill="none" 
-                  strokeDasharray={691} // 2 * PI * 110
-                  strokeDashoffset={691 - (691 * prob)}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out drop-shadow-[0_0_15px_currentColor]"
-                />
-             </svg>
-             <div className="absolute flex flex-col items-center">
-                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Elite Prob</span>
-                <span className="text-6xl font-black text-white tracking-tighter">{(prob * 100).toFixed(1)}%</span>
-                <span className="mt-2 px-4 py-1 rounded-full text-xs font-black uppercase bg-white/10 border border-white/10" style={{ color: tierColor }}>
-                   {tierLabel} TIER
-                </span>
+       <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10 mb-10">
+          {/* Left: Elite Probability Circle */}
+          <div className="flex-1 flex flex-col items-center justify-center">
+             <div className="relative w-64 h-64 flex items-center justify-center">
+                {/* Circular Progress Background */}
+                <svg className="w-full h-full transform -rotate-90">
+                   <circle cx="128" cy="128" r="110" stroke="#1e293b" strokeWidth="12" fill="none" />
+                   <circle 
+                     cx="128" cy="128" r="110" 
+                     stroke={tierColor} 
+                     strokeWidth="12" 
+                     fill="none" 
+                     strokeDasharray={691} // 2 * PI * 110
+                     strokeDashoffset={691 - (691 * prob)}
+                     strokeLinecap="round"
+                     className="transition-all duration-1000 ease-out drop-shadow-[0_0_15px_currentColor]"
+                   />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                   <span className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Elite Prob</span>
+                   <span className="text-6xl font-black text-white tracking-tighter">{(prob * 100).toFixed(1)}%</span>
+                   <span className="mt-2 px-4 py-1 rounded-full text-xs font-black uppercase bg-white/10 border border-white/10" style={{ color: tierColor }}>
+                      {tierLabel} TIER
+                   </span>
+                </div>
+             </div>
+          </div>
+
+          {/* Right: Ranking & Percentile */}
+          <div className="flex-1 w-full md:pl-10 md:border-l border-white/10 flex flex-col justify-center gap-10">
+             
+             {/* Percentile */}
+             <div>
+                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">League Percentile</h4>
+                <div className="flex items-baseline gap-3">
+                   <span className="text-6xl font-black text-white">Top {percentile.toFixed(2)}%</span>
+                </div>
+                <div className="w-full h-4 bg-slate-800 rounded-full mt-4 overflow-hidden relative">
+                   {/* Inverted scale: Lower percentile is better (left side) */}
+                   <div 
+                     className="absolute h-full rounded-full shadow-[0_0_15px_currentColor]" 
+                     style={{ 
+                        left: 0,
+                        // Top 1% = 99% Quality. Top 99% = 1% Quality.
+                        width: `${Math.max(100 - percentile, 0)}%`,
+                        backgroundColor: tierColor 
+                     }}
+                   ></div>
+                </div>
+                <p className="text-slate-400 text-sm mt-2">
+                   동일 보직 선수들 중 상위 <span className="text-white font-bold">{percentile}%</span> 수준의 성적이 예측됩니다.
+                </p>
+             </div>
+
+             {/* Rank */}
+             <div>
+                <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Position Rank</h4>
+                <div className="flex items-end gap-2">
+                   <span className="text-5xl font-black text-white">{rank}</span>
+                   <span className="text-2xl font-bold text-slate-500 mb-2">/ {total}</span>
+                </div>
+                <p className="text-slate-400 text-sm mt-2">
+                   전체 {total}명의 해당 보직 선수 중 예상 순위입니다.
+                </p>
              </div>
           </div>
        </div>
 
-       {/* Right: Ranking & Percentile */}
-       <div className="flex-1 w-full md:pl-10 md:border-l border-white/10 flex flex-col justify-center gap-10 relative z-10">
-          
-          {/* Percentile */}
-          <div>
-             <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">League Percentile</h4>
-             <div className="flex items-baseline gap-3">
-                <span className="text-6xl font-black text-white">Top {percentile.toFixed(2)}%</span>
-             </div>
-             <div className="w-full h-4 bg-slate-800 rounded-full mt-4 overflow-hidden relative">
-                {/* Inverted scale: Lower percentile is better (left side) */}
-                <div 
-                  className="absolute h-full rounded-full shadow-[0_0_15px_currentColor]" 
-                  style={{ 
-                     left: 0,
-                     // Top 1% = 99% Quality. Top 99% = 1% Quality.
-                     width: `${Math.max(100 - percentile, 0)}%`,
-                     backgroundColor: tierColor 
-                  }}
-                ></div>
-             </div>
-             <p className="text-slate-400 text-sm mt-2">
-                동일 보직 선수들 중 상위 <span className="text-white font-bold">{percentile}%</span> 수준의 성적이 예측됩니다.
-             </p>
+       {/* Bottom: 2025 Predicted Stats Grid */}
+       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-8 border-t border-white/10 relative z-10">
+          <div className="bg-white/5 rounded-2xl p-4 flex flex-col items-center justify-center border border-white/5">
+             <span className="text-xs font-bold text-slate-400 uppercase mb-1">ERA (평균자책점)</span>
+             <span className="text-2xl font-black text-white" style={{ color: tierColor }}>{era2025?.toFixed(2) || '-'}</span>
           </div>
-
-          {/* Rank */}
-          <div>
-             <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Position Rank</h4>
-             <div className="flex items-end gap-2">
-                <span className="text-5xl font-black text-white">{rank}</span>
-                <span className="text-2xl font-bold text-slate-500 mb-2">/ {total}</span>
-             </div>
-             <p className="text-slate-400 text-sm mt-2">
-                전체 {total}명의 해당 보직 선수 중 예상 순위입니다.
-             </p>
+          <div className="bg-white/5 rounded-2xl p-4 flex flex-col items-center justify-center border border-white/5">
+             <span className="text-xs font-bold text-slate-400 uppercase mb-1">FIP (수비무관)</span>
+             <span className="text-2xl font-black text-white">{fip2025?.toFixed(2) || '-'}</span>
           </div>
-
+          <div className="bg-white/5 rounded-2xl p-4 flex flex-col items-center justify-center border border-white/5">
+             <span className="text-xs font-bold text-slate-400 uppercase mb-1">WHIP (이닝당출루)</span>
+             <span className="text-2xl font-black text-white">{whip2025?.toFixed(2) || '-'}</span>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-4 flex flex-col items-center justify-center border border-white/5">
+             <span className="text-xs font-bold text-slate-400 uppercase mb-1">IP (이닝)</span>
+             <span className="text-2xl font-black text-white">{formatIp(ip2025)}</span>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-4 flex flex-col items-center justify-center border border-white/5 col-span-2 md:col-span-1">
+             <span className="text-xs font-bold text-slate-400 uppercase mb-1">Role (작년 보직)</span>
+             <span className="text-xl font-black text-white">{role || '-'}</span>
+          </div>
        </div>
     </div>
   );
@@ -526,6 +579,21 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerRosterItem | null>(null);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Modal State
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'confirm' | 'error';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'success',
+  });
+
+  const closeModal = () => setModalState(prev => ({ ...prev, isOpen: false }));
 
   // Load Roster when team or tab changes
   useEffect(() => {
@@ -636,14 +704,20 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
         });
 
       } else {
-        // [투수 로직] Updated for Rank/Percentile
+        // [투수 로직] Updated for Rank/Percentile + New Stats
         metrics.push({
            type: 'pitcher',
            label: 'Future Value',
            probElite: data.probElite,
            rolePercentileTop: data.rolePercentileTop,
            roleRank: data.roleRank,
-           roleTotal: data.roleTotal
+           roleTotal: data.roleTotal,
+           // New Fields
+           era2025: data.era2025,
+           fip2025: data.fip2025,
+           ip2025: data.ip2025,
+           whip2025: data.whip2025,
+           role: data.role
         });
       }
 
@@ -673,6 +747,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
   // Helper to clean report text (max 1 empty line)
   const cleanReportText = (text: string) => {
     if (!text) return "";
+    // Replace multiple newlines with max 2 (one empty line)
     return text.replace(/\n{3,}/g, '\n\n').trim();
   };
 
@@ -902,13 +977,13 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                   <div 
                     className="relative p-10 md:p-12 rounded-[3rem] overflow-hidden shadow-2xl group"
                     style={{ 
-                      border: `2px solid ${activeColor}`,
-                      backgroundColor: '#0a0f1e',
-                      boxShadow: `0 0 40px -10px ${activeColor}44, inset 0 0 50px -20px ${activeColor}22`
+                      border: `1px solid ${activeColor}44`,
+                      background: `linear-gradient(145deg, ${activeColor}11 0%, #0a0f1e 100%)`,
+                      boxShadow: `0 0 50px -20px ${activeColor}33, inset 0 0 40px -20px ${activeColor}22`
                     }}
                   >
                       {/* Inner Neon Gradient */}
-                      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${activeColor}1a 0%, transparent 60%)` }}></div>
+                      <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at top right, ${activeColor}15 0%, transparent 70%)` }}></div>
 
                       <div className="absolute top-0 right-0 w-96 h-96 opacity-10 rounded-full blur-[120px] pointer-events-none" style={{ backgroundColor: activeColor }}></div>
                       
@@ -922,7 +997,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                            </span>
                          </div>
 
-                         <div className="text-center md:text-left">
+                         <div className="text-center md:text-left flex-1">
                             <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
                                <span className="px-4 py-1 bg-white/10 rounded-full text-xs font-bold text-white border border-white/10">{selectedPlayer.positionDetail}</span>
                                <span className="font-bold tracking-widest text-xs uppercase" style={{ color: activeColor }}>{teamNameKR}</span>
@@ -930,6 +1005,68 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                             <h2 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter mb-2">{selectedPlayer.name}</h2>
                             <p className="text-slate-400 text-lg font-light">2026 Season Performance Prediction</p>
                          </div>
+
+                         {/* Add to Dashboard Button */}
+                         <button
+                           onClick={async () => {
+                             if (!selectedPlayer) return;
+                             const token = localStorage.getItem('accessToken');
+                             if (!token) {
+                               setModalState({
+                                 isOpen: true,
+                                 title: '로그인 필요',
+                                 message: '로그인이 필요한 서비스입니다.',
+                                 type: 'error',
+                               });
+                               return;
+                             }
+                             try {
+                               const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/player`, {
+                                 method: 'POST',
+                                 headers: {
+                                   'Authorization': `Bearer ${token}`,
+                                   'Content-Type': 'application/json',
+                                 },
+                                 body: JSON.stringify({ playerId: selectedPlayer.id }),
+                               });
+                               if (response.ok) {
+                                 setModalState({
+                                   isOpen: true,
+                                   title: '선수 추가 완료',
+                                   message: '대시보드에 선수가 성공적으로 추가되었습니다.',
+                                   type: 'success',
+                                 });
+                               } else {
+                                 const errorMsg = await response.text();
+                                 setModalState({
+                                   isOpen: true,
+                                   title: '선수 추가 실패',
+                                   message: errorMsg,
+                                   type: 'error',
+                                 });
+                               }
+                             } catch (error) {
+                               console.error("Add to Dashboard Error:", error);
+                               setModalState({
+                                 isOpen: true,
+                                 title: '오류 발생',
+                                 message: '서버 통신 중 오류가 발생했습니다.',
+                                 type: 'error',
+                               });
+                             }
+                           }}
+                           className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg group/btn"
+                           style={{ 
+                             backgroundColor: activeColor, 
+                             color: isLightTeam ? '#000' : '#fff',
+                             boxShadow: `0 10px 20px -5px ${activeColor}66`
+                           }}
+                         >
+                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                           </svg>
+                           <span>대시보드에 추가하기</span>
+                         </button>
                       </div>
                   </div>
 
@@ -952,13 +1089,13 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                   <div 
                     className="flex-1 p-10 md:p-14 rounded-[3rem] relative overflow-hidden shadow-2xl"
                     style={{ 
-                      border: `2px solid ${activeColor}`,
-                      backgroundColor: '#0f172a',
-                      boxShadow: `0 0 40px -10px ${activeColor}44, inset 0 0 50px -20px ${activeColor}22`
+                      border: `1px solid ${activeColor}44`,
+                      background: `linear-gradient(145deg, ${activeColor}05 0%, #0f172a 100%)`,
+                      boxShadow: `0 0 40px -10px ${activeColor}22`
                     }}
                   >
                     {/* Inner Neon Gradient */}
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(135deg, ${activeColor}1a 0%, transparent 60%)` }}></div>
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at top right, ${activeColor}10 0%, transparent 60%)` }}></div>
 
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-white/5 to-transparent rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-50"></div>
@@ -970,7 +1107,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                             className="text-4xl font-black text-white tracking-tight mb-2 uppercase italic"
                             style={{ textShadow: `0 0 30px ${activeColor}66` }}
                           >
-                            DUGOUT <span style={{ color: activeColor }}>REPORT</span>
+                            DUGOUT <span style={{ color: activeColor, textShadow: `0 0 20px ${activeColor}` }}>REPORT</span>
                           </h4>
                           <span className="text-xs text-slate-500 font-bold uppercase tracking-[0.3em] pl-1">Advanced AI Analysis</span>
                         </div>
@@ -981,11 +1118,15 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                          
                          <div className="md:pl-10">
                            {/* Font size adjusted to text-xl as requested */}
-                           <div className="text-slate-200 leading-relaxed font-medium text-xl tracking-wide font-sans text-justify">
+                           <div className="text-slate-200 leading-relaxed font-medium text-xl tracking-wide font-serif text-justify">
                              <ReactMarkdown
                                components={{
+                                 h1: ({node, ...props}) => <h1 className="text-3xl font-black mb-6 mt-8 pb-2 border-b border-white/10" style={{ color: activeColor }} {...props} />,
+                                 h2: ({node, ...props}) => <h2 className="text-2xl font-bold mb-4 mt-8" style={{ color: activeColor }} {...props} />,
+                                 h3: ({node, ...props}) => <h3 className="text-xl font-bold mb-3 mt-6 text-white" {...props} />,
                                  strong: ({node, ...props}) => <span className="font-black" style={{ color: activeColor }} {...props} />,
-                                 p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />
+                                 p: ({node, ...props}) => <p className="mb-6 last:mb-0 leading-loose" style={{ fontFamily: '"Noto Serif KR", serif' }} {...props} />,
+                                 li: ({node, ...props}) => <li className="mb-2 ml-4 list-disc marker:text-slate-500" {...props} />
                                }}
                              >
                                {cleanReportText(prediction.aiFeedback)}
@@ -1003,6 +1144,15 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+      />
     </div>
   );
 };

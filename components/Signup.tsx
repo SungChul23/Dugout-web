@@ -5,16 +5,16 @@ const API_BASE_URL = "https://dugout.cloud";
 
 const KBO_TEAMS = [
   'KIA 타이거즈', '삼성 라이온즈', 'LG 트윈스', '두산 베어스', 'KT 위즈',
-  'SSG 랜더스', '한화 이글스', '롯데 자이언츠', 'NC 다이노스', '키움 히어로즈',
-  '없음'
+  'SSG 랜더스', '한화 이글스', '롯데 자이언츠', 'NC 다이노스', '키움 히어로즈'
 ];
 
 interface SignupProps {
   onCancel: () => void;
   onLoginSuccess: (nickname: string, favoriteTeam: string, teamSlogan?: string) => void;
+  onFindTeamClick: () => void;
 }
 
-const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
+const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess, onFindTeamClick }) => {
   const [formData, setFormData] = useState({
     nickname: '',
     email: '',
@@ -255,6 +255,24 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
+            </div>
+            
+            {/* Find My Team Link */}
+            <div className="mt-3 flex items-center justify-between bg-white/5 rounded-xl p-4 border border-white/5">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse"></span>
+                <span className="text-sm text-slate-400">아직 응원하는 팀을 못 고르셨나요?</span>
+              </div>
+              <button
+                type="button"
+                onClick={onFindTeamClick}
+                className="text-sm font-bold text-brand-accent hover:text-white transition-colors flex items-center gap-1 group"
+              >
+                나의 팀 찾기
+                <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
 

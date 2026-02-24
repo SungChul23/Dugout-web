@@ -11,12 +11,12 @@ const Ticker: React.FC = () => {
             {item.highlight && (
               <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2"></span>
             )}
-            <span className={`text-xs font-mono tracking-wide ${item.highlight ? 'text-red-400 font-bold' : 'text-slate-300'}`}>
+            <span className={`text-base md:text-lg font-mono tracking-wide ${item.highlight ? 'text-red-400 font-bold' : 'text-slate-300'}`}>
               {item.type === 'TREND' ? '' : `[${item.type}] `}
               {item.text}
             </span>
             {item.value && (
-              <span className="ml-2 px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-brand-accent font-bold">
+              <span className="ml-2 px-2 py-0.5 rounded bg-white/10 text-sm text-brand-accent font-bold">
                 {item.value}
               </span>
             )}

@@ -1,13 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 import { TEAMS } from '../constants';
+import { Settings, LogOut, Trash2 } from 'lucide-react';
 
 const API_BASE_URL = "https://dugout.cloud";
 
 interface MyDashboardProps {
   user: { nickname: string; favoriteTeam?: string; teamSlogan?: string };
   onFindTeamClick: () => void;
-  onNewsClick: () => void; // 뉴스 페이지로 이동하는 핸들러 추가
+  onNewsClick: () => void;
+  onAddPlayerClick: () => void;
 }
 
 // 서버 DTO 구조
@@ -15,10 +18,24 @@ interface PlayerInsightDto {
   slotNumber: number;
   playerId: number;
   name: string;
+  backNumber?: number; // 추가: 선수 등번호
   position: string;
-  predictedStat: string; // 예: "0.352 (MVP 유력)"
-  confidence: number;   // 신뢰도 (0~100)
+  teamCode: string; // 추가: 선수의 소속 팀 코드 (예: "SS", "HH" 등)
   isEmpty: boolean;
+
+  // --- 타자용 지표 ---
+  predictedAvg?: number;
+  predictedOps?: number;
+  predictedHr?: number;
+  avgDiff?: number;
+  opsDiff?: number;
+  hrDiff?: number;
+
+  // --- 투수용 지표 ---
+  probElite?: number;
+  rolePercentileTop?: number;
+  roleRank?: number;
+  roleTotal?: number;
 }
 
 interface NewsItemDto {
@@ -75,46 +92,171 @@ const ENGLISH_TO_KOREAN: Record<string, string> = {
   'KIWOOM HEROES': '키움 히어로즈',
 };
 
+// 서버 팀 코드 -> TEAMS 상수 코드 매핑
+const SERVER_TEAM_CODE_MAP: Record<string, string> = {
+  'HT': 'KIA', 'KA': 'KIA', 'KIA': 'KIA',
+  'SS': 'SAMSUNG', 'SL': 'SAMSUNG', 'SAMSUNG': 'SAMSUNG',
+  'LG': 'LG',
+  'OB': 'DOOSAN', 'DOOSAN': 'DOOSAN',
+  'KT': 'KT',
+  'SK': 'SSG', 'SG': 'SSG', 'SSG': 'SSG',
+  'HH': 'HANWHA', 'HANWHA': 'HANWHA',
+  'LT': 'LOTTE', 'LOTTE': 'LOTTE',
+  'NC': 'NC',
+  'WO': 'KIWOOM', 'KIWOOM': 'KIWOOM'
+};
+
+// --- 서버 팀 ID(PK) -> 영문 팀 코드 매핑 (지역명 제외) ---
+const SERVER_ID_TO_CODE: Record<string, string> = {
+  '1': 'SAMSUNG',
+  '2': 'DOOSAN',
+  '3': 'LG',
+  '4': 'LOTTE',
+  '5': 'KIA',
+  '6': 'HANWHA',
+  '7': 'SSG',
+  '8': 'KIWOOM',
+  '9': 'NC',
+  '10': 'KT'
+};
+
+
 // HTML 태그 제거 및 따옴표 정리 유틸리티
 const cleanText = (text: string) => text.replace(/<b>/g, '').replace(/<\/b>/g, '').replace(/&quot;/g, '"');
 
-const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNewsClick }) => {
+const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNewsClick, onAddPlayerClick }) => {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Modal State
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'confirm' | 'error';
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'success',
+  });
+
+  const closeModal = () => setModalState(prev => ({ ...prev, isOpen: false }));
   
   // 데이터 가져오기
+  const fetchDashboard = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/dashboard`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardData(data);
+      } else {
+        console.error("Failed to fetch dashboard data");
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboard = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/dashboard`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setDashboardData(data);
-        } else {
-          console.error("Failed to fetch dashboard data");
-        }
-      } catch (error) {
-        console.error("API Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboard();
   }, [user.favoriteTeam]);
+
+  // 선수 제거 확인 및 실행
+  const confirmRemovePlayer = async (slotNumber: number) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/player?slotNumber=${slotNumber}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        closeModal();
+        fetchDashboard(); 
+      }
+    } catch (error) {
+      console.error("Remove Player Error:", error);
+    }
+  };
+
+  // 선수 제거 핸들러 (모달 호출)
+  const handleRemovePlayer = (slotNumber: number) => { 
+    setModalState({
+      isOpen: true,
+      title: '선수 제거',
+      message: '정말 이 선수를 대시보드에서 제거하시겠습니까?',
+      type: 'confirm',
+      onConfirm: () => confirmRemovePlayer(slotNumber),
+    });
+  };
+
+  // 회원 탈퇴 핸들러
+  const handleDeleteAccount = () => {
+    setModalState({
+      isOpen: true,
+      title: '회원 탈퇴',
+      message: '정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.',
+      type: 'confirm', // Use error type for destructive action
+      confirmText: '탈퇴하기',
+      onConfirm: async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/v1/members/me`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            window.location.reload(); // Reload to reset app state
+          } else {
+            const errorMsg = await response.text();
+            setModalState({
+              isOpen: true,
+              title: '탈퇴 실패',
+              message: errorMsg || '회원 탈퇴 중 오류가 발생했습니다.',
+              type: 'error',
+            });
+          }
+        } catch (error) {
+          console.error("Delete Account Error:", error);
+          setModalState({
+            isOpen: true,
+            title: '오류 발생',
+            message: '서버 통신 중 오류가 발생했습니다.',
+            type: 'error',
+          });
+        }
+      },
+    });
+  };
 
   // 1. 현재 유저의 팀 이름 (서버 데이터 우선, 없으면 로컬 user prop 사용)
   const rawTeamName = dashboardData?.favoriteTeamName || user.favoriteTeam;
@@ -185,9 +327,9 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
 
   // --- CASE 2: 팀이 있는 경우 (Dashboard) ---
   const insights = dashboardData?.insights || [
+    { slotNumber: 0, isEmpty: true },
     { slotNumber: 1, isEmpty: true },
     { slotNumber: 2, isEmpty: true },
-    { slotNumber: 3, isEmpty: true },
   ] as PlayerInsightDto[];
   
   const newsList = dashboardData?.news || [];
@@ -206,7 +348,35 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
            ></div>
            
            <div className="relative z-10 p-12 md:p-16 flex flex-col md:flex-row justify-between items-end gap-8">
-              <div>
+              {/* Settings Button - Top Right */}
+              <div className="absolute top-8 right-8 z-50">
+                <div className="relative">
+                  <button
+                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                    className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <Settings className="w-8 h-8" />
+                  </button>
+                  
+                  {/* Settings Dropdown */}
+                  {isSettingsOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-[#1a1f2e] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-fade-in-up">
+                      <button
+                        onClick={() => {
+                          setIsSettingsOpen(false);
+                          handleDeleteAccount();
+                        }}
+                        className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        회원 탈퇴
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="relative">
                 <div className="flex items-center gap-4 mb-6">
                    <span 
                     className="px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest border"
@@ -267,89 +437,205 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
             <div className="flex items-center justify-between">
               <h3 className="text-3xl font-bold text-white flex items-center gap-3">
                 <span className="w-2 h-8 rounded-full" style={{ backgroundColor: teamColor }}></span>
-                AI Key Player Insight
+                나의 키 플레이어
               </h3>
               <span className="text-sm text-slate-500 font-mono">* 실시간 데이터 기반</span>
             </div>
 
             {/* 카드 높이 및 그리드 Gap 조정 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {insights.map((insight, idx) => {
                 // isEmpty 상태 처리
                 if (insight.isEmpty) {
                   return (
                     <div 
                       key={idx}
-                      className="bg-[#0a0f1e]/40 border-2 border-dashed border-white/10 p-8 rounded-[2rem] flex flex-col items-center justify-center min-h-[400px] text-center gap-6 transition-all hover:border-white/20 hover:bg-[#0a0f1e]/60 group cursor-pointer"
-                      style={{ borderColor: `${teamColor}22` }}
+                      className="bg-[#0a0f1e]/40 border-2 border-dashed border-white/10 p-8 rounded-[2rem] flex flex-col items-center justify-center min-h-[450px] text-center gap-6 transition-all hover:border-white/30 hover:bg-[#0a0f1e]/60 group cursor-pointer relative overflow-hidden"
+                      style={{ borderColor: `${teamColor}33` }}
+                      onClick={onAddPlayerClick}
                     >
-                      <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors text-slate-600 group-hover:text-slate-400 mb-2">
-                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none"></div>
+                      
+                      <div 
+                        className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-2xl"
+                        style={{ backgroundColor: `${teamColor}11`, border: `1px solid ${teamColor}33` }}
+                      >
+                        <svg className="w-10 h-10 transition-colors duration-300" style={{ color: teamColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
                         </svg>
                       </div>
-                      <div>
-                        <p className="text-lg font-bold text-slate-400 mb-2">선수를 추가하지 않았습니다</p>
-                        <p className="text-sm text-slate-600 font-light leading-relaxed">
-                          AI가 분석할 핵심 선수를<br/>
-                          선택해주세요.
+                      
+                      <div className="relative z-10">
+                        <h4 className="text-xl font-bold text-white mb-3 group-hover:text-brand-accent transition-colors">선수 추가하기</h4>
+                        <p className="text-sm text-slate-500 font-light leading-relaxed">
+                          AI가 분석할 핵심 선수를 선택하여<br/>
+                          <span className="font-bold text-slate-400">2026 시즌 성적</span>을 미리 확인하세요.
                         </p>
                       </div>
-                      <button className="px-5 py-2 rounded-full border border-white/10 text-xs font-bold text-slate-500 group-hover:bg-white/10 group-hover:text-white transition-all">
-                        선수 추가하기
-                      </button>
+                      
+                      <div 
+                        className="px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all transform group-hover:translate-y-1"
+                        style={{ backgroundColor: teamColor, color: '#000' }}
+                      >
+                        Add Player
+                      </div>
                     </div>
                   );
                 }
 
-                // predictedStat 파싱
-                let mainValue = "-";
-                let subLabel = "";
-                
-                if (insight.predictedStat) {
-                  const parts = insight.predictedStat.split(' ');
-                  mainValue = parts[0];
-                  subLabel = parts.slice(1).join(' ').replace(/[()]/g, '');
-                }
+                // Determine card color based on teamCode
+                const playerTeamCode = SERVER_ID_TO_CODE[insight.teamCode] || insight.teamCode;
+                // 변환된 영문 코드로 TEAMS 상수에서 컬러와 정보 찾기
+                const playerTeam = TEAMS.find(t => t.code === playerTeamCode);
+                const cardColor = playerTeam?.color || teamColor;
+
+                // Helper to format diff
+                const renderDiff = (diff?: number, isReverse: boolean = false) => {
+                    if (diff === undefined || diff === null) return null;
+                    if (diff === 0) return <span className="text-slate-500 text-xs font-bold">-</span>;
+                    
+                    const isPositive = diff > 0;
+                    const isGood = isReverse ? !isPositive : isPositive; // For ERA, lower is better (not implemented yet, but good practice)
+                    const colorClass = isGood ? 'text-red-400' : 'text-blue-400'; // KBO style: Red is good (hot), Blue is bad (cold) usually? Or Green/Red? 
+                    // Let's stick to: Red (+) / Blue (-) for generic stats like AVG/HR. 
+                    // Wait, in baseball UI usually Red is hot/high, Blue is cold/low.
+                    
+                    return (
+                        <span className={`text-xs font-bold flex items-center gap-0.5 ${diff > 0 ? 'text-red-400' : 'text-blue-400'}`}>
+                            {diff > 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(3).replace(/\.?0+$/, '')}
+                        </span>
+                    );
+                };
 
                 return (
                   <div 
                     key={idx}
-                    className="bg-[#0a0f1e]/80 border border-white/5 p-8 rounded-[2rem] relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between min-h-[400px]"
-                    style={{ borderColor: `${teamColor}33` }}
+                    className="bg-[#0a0f1e]/80 border border-white/5 p-0 rounded-[2rem] relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 flex flex-col min-h-[450px]"
+                    style={{ borderColor: `${cardColor}44`, boxShadow: `0 0 30px -10px ${cardColor}22` }}
                   >
-                    {/* Background Accents */}
-                    <div className="absolute -right-10 -top-10 w-40 h-40 opacity-10 blur-3xl rounded-full" style={{ backgroundColor: teamColor }}></div>
+                    {/* Header Background */}
+                    <div className="absolute top-0 left-0 right-0 h-32 opacity-20" style={{ background: `linear-gradient(180deg, ${cardColor}, transparent)` }}></div>
                     
-                    <div className="relative z-10 flex flex-col h-full">
-                      {/* Header */}
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="w-14 h-14 bg-slate-800 rounded-full flex items-center justify-center border border-white/5 text-slate-400 font-black text-base">
-                            {insight.position}
+                    {/* Content Container */}
+                    <div className="relative z-10 flex flex-col h-full p-8">
+                      
+                      {/* Top Row: Position & Team */}
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                            <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-xs font-bold text-white border border-white/10">
+                                {insight.position}
+                            </span>
+                            <span className="text-xs font-bold tracking-widest uppercase text-white/60">
+                                {playerTeam?.name || insight.teamCode}
+                            </span>
                         </div>
-                        <div className="text-right">
-                          <span className="block text-5xl font-black text-white italic tracking-tight mb-1">{mainValue}</span>
-                          <span className="text-xs text-slate-500 uppercase tracking-widest font-bold block">{subLabel || 'AI PREDICTION'}</span>
-                        </div>
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemovePlayer(insight.slotNumber);
+                            }}
+                            className="text-slate-600 hover:text-red-400 transition-colors p-1"
+                            title="선수 제거"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
                       </div>
 
                       {/* Player Name */}
-                      <h4 className="text-3xl font-bold text-white mb-auto mt-4">{insight.name}</h4>
-                      
-                      <div className="w-full h-[1px] bg-white/10 my-8"></div>
-
-                      {/* Footer */}
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-base text-slate-400">예측 신뢰도</span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold" style={{ color: teamColor }}>{insight.confidence}%</span>
-                            </div>
-                        </div>
-                        <div className="w-full h-2.5 bg-slate-700 rounded-full overflow-hidden">
-                            <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${insight.confidence}%`, backgroundColor: teamColor }}></div>
-                        </div>
+                      <div className="mb-8">
+                          <h4 className="text-4xl font-black text-white italic tracking-tighter leading-none mb-1">
+                              {insight.backNumber && (
+                                  <span className="text-2xl text-white/40 mr-2 not-italic font-sans">{insight.backNumber}</span>
+                              )}
+                              {insight.name}
+                          </h4>
+                          <p className="text-xs text-slate-500 font-light">2026 Season Prediction</p>
                       </div>
+
+                      {/* Stats Grid */}
+                      <div className="flex-1 space-y-4">
+                        {insight.predictedAvg !== undefined ? (
+                            // --- Batter Stats ---
+                            <>
+                                <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
+                                    <div>
+                                        <span className="text-xs text-slate-500 font-bold uppercase block mb-1">AVG</span>
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-2xl font-black text-white tracking-tight">{insight.predictedAvg.toFixed(3)}</span>
+                                            {renderDiff(insight.avgDiff)}
+                                        </div>
+                                    </div>
+                                    <div className="h-8 w-[1px] bg-white/10"></div>
+                                    <div className="text-right">
+                                        <span className="text-xs text-slate-500 font-bold uppercase block mb-1">HR</span>
+                                        <div className="flex items-end justify-end gap-2">
+                                            <span className="text-2xl font-black text-white tracking-tight">{insight.predictedHr}</span>
+                                            {renderDiff(insight.hrDiff)}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-xs text-slate-500 font-bold uppercase">OPS</span>
+                                        {renderDiff(insight.opsDiff)}
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-3xl font-black italic" style={{ color: cardColor }}>{insight.predictedOps?.toFixed(3)}</span>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[10px] text-slate-500 uppercase">vs Last Season</span>
+                                        </div>
+                                    </div>
+                                    {/* Simple Bar for OPS context (dummy scale 0.6 to 1.1) */}
+                                    <div className="w-full h-1.5 bg-slate-700/50 rounded-full mt-3 overflow-hidden">
+                                        <div 
+                                            className="h-full rounded-full" 
+                                            style={{ 
+                                                width: `${Math.min(100, Math.max(0, ((insight.predictedOps || 0) - 0.6) / 0.5 * 100))}%`, 
+                                                backgroundColor: cardColor 
+                                            }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            // --- Pitcher Stats ---
+                            <>
+                                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                    <span className="text-xs text-slate-500 font-bold uppercase block mb-2">Elite Probability</span>
+                                    <div className="flex items-end justify-between">
+                                        <span className="text-3xl font-black text-white italic">
+                                            {insight.probElite ? (insight.probElite * 100).toFixed(1) : '0.0'}%
+                                        </span>
+                                        <span className="text-xs text-slate-400 mb-1">Top Tier Potential</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-slate-700/50 rounded-full mt-3 overflow-hidden">
+                                        <div 
+                                            className="h-full rounded-full" 
+                                            style={{ 
+                                                width: `${(insight.probElite || 0) * 100}%`, 
+                                                backgroundColor: cardColor 
+                                            }}
+                                        ></div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                        <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Role Rank</span>
+                                        <span className="text-xl font-black text-white block">
+                                            {insight.roleRank}<span className="text-sm text-slate-500 font-normal">/{insight.roleTotal}</span>
+                                        </span>
+                                    </div>
+                                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                        <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Top %</span>
+                                        <span className="text-xl font-black text-white block">
+                                            {insight.rolePercentileTop ? (insight.rolePercentileTop).toFixed(1) : '-'}%
+                                        </span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                      </div>
+
                     </div>
                   </div>
                 );
@@ -441,6 +727,16 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
 
         </div>
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        onConfirm={modalState.onConfirm}
+      />
     </div>
   );
 };

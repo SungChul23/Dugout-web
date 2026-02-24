@@ -190,7 +190,7 @@ function App() {
         )}
 
         {/* Components Rendering */}
-        {view === 'signup' && <Signup onCancel={navigateToHome} onLoginSuccess={handleLoginSuccess} />}
+        {view === 'signup' && <Signup onCancel={navigateToHome} onLoginSuccess={handleLoginSuccess} onFindTeamClick={() => setView('findTeam')} />}
         {view === 'login' && <Login onLoginSuccess={handleLoginSuccess} onCancel={navigateToHome} onSignupClick={navigateToSignup} />}
         {view === 'tickets' && <TicketReservation onCancel={navigateToHome} />}
         {view === 'guide' && <GuidePage onCancel={navigateToHome} />}
@@ -205,6 +205,7 @@ function App() {
             user={user} 
             onFindTeamClick={() => handleFeatureClick('8')} 
             onNewsClick={() => handleMenuClick('news')}
+            onAddPlayerClick={() => handleMenuClick('prediction')}
           />
         )}
       </main>

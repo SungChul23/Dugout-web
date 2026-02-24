@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 
 interface NavbarProps {
   user?: { nickname: string; favoriteTeam?: string; teamSlogan?: string } | null;
@@ -55,6 +56,35 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+
+  // Modal State
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'confirm' | 'error';
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'success',
+  });
+
+  const closeModal = () => setModalState(prev => ({ ...prev, isOpen: false }));
+
+  const handleLogoutClick = () => {
+    setModalState({
+      isOpen: true,
+      title: '로그아웃',
+      message: '정말 로그아웃 하시겠습니까?',
+      type: 'confirm',
+      onConfirm: () => {
+        onLogoutClick?.();
+        closeModal();
+      },
+    });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -251,7 +281,7 @@ const Navbar: React.FC<NavbarProps> = ({
                </div>
                
                <button 
-                onClick={onLogoutClick}
+                onClick={handleLogoutClick}
                 className="text-slate-500 hover:text-red-400 transition-colors p-3 hover:bg-red-500/10 rounded-full"
                 title="로그아웃"
                >
@@ -283,6 +313,18 @@ const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        onConfirm={modalState.onConfirm}
+        confirmText="로그아웃"
+        cancelText="취소"
+      />
     </nav>
   );
 };
