@@ -106,7 +106,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ onFeatureClick }) => 
                             </div>
                           )}
                         </div>
-                        <p className={`text-sm md:text-lg leading-snug font-light transition-colors ${isComingSoon ? 'text-slate-600' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                        <p className={`text-sm md:text-lg leading-snug font-light transition-colors break-keep ${isComingSoon ? 'text-slate-600' : 'text-slate-500 group-hover:text-slate-300'}`}>
                           {feature.description}
                         </p>
                       </div>

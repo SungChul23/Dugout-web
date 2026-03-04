@@ -108,12 +108,12 @@ export const FEATURES: Feature[] = [
   { id: '1', category: 'Game Data Center', title: 'KBO 팀/성적 순위', description: '실제 기록과 AI 보정 지표를 비교 분석' },
   { id: '2', category: 'Game Data Center', title: '경기 일정 & 라인업', description: '전 구단 경기 일정 및 실시간 라인업 확인' },
   { id: '3', category: 'Game Data Center', title: '실시간 KBO 뉴스', description: '구단별 주요 속보와 이슈 큐레이션' },
-  { id: '4', category: 'AI Predictive Insight', title: '선수 미래 성적 예측', description: '타율, ERA 등 시즌 종료 시점 성적 시뮬레이션' },
-  { id: '5', category: 'AI Predictive Insight', title: '골든글러브/수상 예측', description: '데이터 기반 수상 확률 실시간 산출' },
-  { id: '6', category: 'AI Predictive Insight', title: 'FA 시장 등급 분석', description: '[비시즌] 예비 FA 선수 A/B/C 등급 및 가치 평가' },
+  { id: '4', category: 'AI Predictive Insight', title: '선수 미래 성적 예측', description: '타율·OPS·엘리트 투수 등 시즌 종료 시점 성적 시뮬레이션' },
+  { id: '5', category: 'AI Predictive Insight', title: '골든글러브/수상 예측', description: '데이터 기반 수상 확률 산출' },
+  { id: '6', category: 'AI Predictive Insight', title: 'FA 시장 등급 분석', description: '예비 FA 선수의 가치와 리스크를 정량적으로 분석' },
   { id: '7', category: 'Fan Experience', title: '구단별 티켓 예매', description: '각 구단 예매 사이트 직링 및 일정 알림' },
-  { id: '8', category: 'Fan Experience', title: '나의 팀 찾기 (AI 매칭)', description: '취향 분석을 통해 나에게 딱 맞는 구단 추천' },
-  { id: '9', category: 'Fan Experience', title: '야구 용어 & 룰 가이드', description: '입문자를 위한 쉽고 재미있는 야구 백과' },
+  { id: '8', category: 'Fan Experience', title: '나의 팀 찾기', description: '당신의 야구취향 데이터를 분석해 가장 잘 맞는 구단을 추천' },
+  { id: '9', category: 'Fan Experience', title: '야구 용어 & 룰 가이드', description: '초보부터 마니아까지, 야구를 구조적으로 이해하는 가이드' },
 ];
 
 export const TICKER_ITEMS: TickerItem[] = [

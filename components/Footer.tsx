@@ -16,19 +16,13 @@ const Footer: React.FC = () => {
         
         {/* Navigation Links (Synced with Navbar) */}
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-6 md:mb-0 text-sm font-bold">
-          <span className="hover:text-white transition-colors cursor-pointer">경기 일정</span>
-          <span className="hover:text-white transition-colors cursor-pointer">기록/순위</span>
-          <span className="hover:text-white transition-colors cursor-pointer">뉴스</span>
-          <span className="hover:text-white transition-colors cursor-pointer">티켓 예매</span>
-          <span className="hover:text-white transition-colors cursor-pointer">팀 찾기</span>
-          <span className="hover:text-white transition-colors cursor-pointer">가이드</span>
+          {/* Links removed as requested */}
         </div>
 
         {/* Social / Legal */}
         <div className="flex flex-col items-center md:items-end space-y-2">
           <div className="flex space-x-6 text-xs font-medium">
-            <span className="hover:text-white transition-colors cursor-pointer">이용약관</span>
-            <span className="hover:text-white transition-colors cursor-pointer">개인정보처리방침</span>
+             {/* Legal links removed as requested */}
           </div>
           <p className="text-[10px] text-slate-700 uppercase tracking-widest font-mono">
             &copy; 2026 DUGOUT CORP.

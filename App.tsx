@@ -152,13 +152,13 @@ function App() {
               </div>
               
               <h1 className="text-4xl md:text-7xl font-black mb-4 md:mb-6 leading-tight tracking-tight">
-                <span className="block text-white">더그아웃에서 보는</span>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent via-brand-primary to-brand-glow">
-                  야구의 진짜 깊이.
+                <span className="block text-white">관중석이 아닌,</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent via-brand-primary to-brand-glow font-serif italic">
+                  더그아웃의 시선으로.
                 </span>
               </h1>
               
-              <p className="max-w-2xl mx-auto text-slate-400 text-sm md:text-xl font-light leading-relaxed mb-8 md:mb-10 px-2">
+              <p className="max-w-2xl mx-auto text-slate-400 text-sm md:text-xl font-light leading-relaxed mb-8 md:mb-10 px-2 break-keep">
                 10개 구단 모든 데이터의 중심. 실시간 트래킹부터 미래 성적 예측까지,<br className="md:hidden" /> 
                 야구를 꿰뚫는 새로운 시각.
               </p>

@@ -1,12 +1,22 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { TEAMS } from '../constants'; // 팀 정보 및 컬러 매핑을 위해 Import
 import ReactMarkdown from 'react-markdown';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = "https://dugout.cloud";
 
 interface FindMyTeamProps {
   onCancel: () => void;
+}
+
+interface TeamRecommendationResponseDto {
+  year: string;
+  teamName: string;
+  originalName: string;
+  score: number;
+  reason: string;
+  statsSummary: string;
 }
 
 const QUESTIONS = [
@@ -68,7 +78,7 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [isAnimating, setIsAnimating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiResult, setApiResult] = useState<any>(null);
+  const [apiResult, setApiResult] = useState<TeamRecommendationResponseDto[] | null>(null);
 
   const handleYearSelect = (year: number) => {
     setStartYear(year);
@@ -126,16 +136,7 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
         throw new Error('Analysis Failed');
       }
 
-      /* 
-        [Server Response Example]
-        {
-          "year": "2018",
-          "teamName": "SSG", (또는 "SSG 랜더스", "두산" 등)
-          "score": 0.9452, (사용 안함)
-          "reason": "분석 결과..."
-        }
-      */
-      const data = await response.json();
+      const data: TeamRecommendationResponseDto[] = await response.json();
       setApiResult(data);
       
       // 결과 화면으로 이동
@@ -217,21 +218,13 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
   };
 
   // --- STEP 8: Result View (API Result Visualization) ---
-  if (step === 8 && apiResult) {
-    const rawServerName = apiResult.teamName || "알 수 없음";
-    const displayName = formatTeamName(rawServerName); // 표시용 풀네임
-    const reason = apiResult.reason || "상세 분석 내용을 불러오는 중입니다.";
-    
-    // 스타일 정보 가져오기 (색상, 로고 코드 등)
-    const teamStyle = getTeamStyle(rawServerName);
-    const teamColor = teamStyle?.color || '#ec4899';
-    
-    // 과거 구단인지 확인 (Rank가 숫자형이 아니면 과거 구단으로 간주)
-    const isLegend = typeof teamStyle?.rank !== 'number';
+  if (step === 8 && apiResult && apiResult.length > 0) {
+    // 1순위 팀 (Main) for Insight Text
+    const topTeam = apiResult[0];
 
     return (
-      <div className="relative z-10 w-full min-h-[80vh] flex flex-col items-center justify-center animate-fade-in-up px-6 pb-12">
-        <div className="max-w-7xl w-full mx-auto"> {/* Expanded Width */}
+      <div className="relative z-10 w-full min-h-[80vh] flex flex-col items-center justify-center animate-fade-in-up px-6 pb-12 overflow-y-auto">
+        <div className="max-w-7xl w-full mx-auto">
           
           {/* Header Badge */}
           <div className="text-center mb-12">
@@ -241,97 +234,116 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
                  AI Analysis Complete
                </span>
             </div>
+            <h2 className="text-4xl font-black text-white mt-6 mb-2">
+              당신의 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400">운명의 팀</span>을 찾았습니다
+            </h2>
+            <p className="text-slate-400">
+              데이터가 분석한 당신의 취향과 가장 완벽하게 일치하는 TOP 3 구단입니다.
+            </p>
           </div>
 
-          <div className="flex flex-col xl:flex-row gap-12 xl:gap-24 items-center justify-center">
-            
-            {/* Left: Team Card */}
-            <div className="relative w-full max-w-md xl:w-[500px] group perspective-container">
-               <div 
-                 className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-[2.5rem] transform rotate-3 blur-md opacity-50 group-hover:rotate-6 transition-transform duration-500"
-                 style={{ backgroundColor: `${teamColor}33` }}
-               ></div>
-               
-               <div className="relative bg-[#0a0f1e] border border-white/10 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl flex flex-col items-center justify-center min-h-[460px]">
-                  {/* Dynamic Glow Background */}
-                  <div 
-                    className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-[80px] opacity-40 transition-opacity duration-1000"
-                    style={{ backgroundColor: teamColor }}
-                  ></div>
+          {/* Top 3 Teams Grid (Horizontal) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
+            {apiResult.slice(0, 3).map((team, index) => {
+              const isFirst = index === 0;
+              const style = getTeamStyle(team.teamName);
+              const color = style?.color || '#ec4899';
+              const displayName = formatTeamName(team.teamName);
 
-                  <div className="relative z-10 text-center w-full">
-                     <span className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em] mb-10 block">Your Destiny Team</span>
-                     
-                     {/* Team Logo / Code Circle */}
-                     <div className="mb-10 transform group-hover:scale-105 transition-transform duration-500">
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className={`relative group overflow-hidden rounded-[2rem] border transition-all duration-300 flex flex-col ${
+                    isFirst 
+                      ? 'bg-[#0a0f1e] border-pink-500/50 shadow-[0_0_30px_rgba(236,72,153,0.15)] md:-mt-4 md:mb-4 z-10 ring-1 ring-pink-500/30' 
+                      : 'bg-[#0a0f1e]/80 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                   {/* Background Gradient for First Place */}
+                   {isFirst && (
+                     <div className="absolute inset-0 bg-gradient-to-b from-pink-500/10 to-transparent opacity-50 pointer-events-none"></div>
+                   )}
+                   
+                   <div className="p-6 flex flex-col items-center text-center relative z-10 h-full">
+                      {/* Rank Badge */}
+                      <div className={`mb-6 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                        isFirst ? 'bg-pink-500 text-white shadow-lg' : 'bg-white/10 text-slate-400'
+                      }`}>
+                        {isFirst ? 'Best Match' : `Rank ${index + 1}`}
+                      </div>
+
+                      {/* Logo */}
+                      <div className="mb-6 transform group-hover:scale-110 transition-transform duration-500">
                         <div 
-                          className="w-40 h-40 mx-auto rounded-full flex items-center justify-center text-5xl font-black text-white shadow-[0_0_40px_rgba(0,0,0,0.5)] border-[8px]"
-                          style={{ backgroundColor: teamColor, borderColor: 'rgba(255,255,255,0.1)' }}
+                          className={`rounded-full flex items-center justify-center font-black text-white shadow-lg border-4 ${
+                            isFirst ? 'w-32 h-32 text-4xl' : 'w-24 h-24 text-3xl'
+                          }`}
+                          style={{ backgroundColor: color, borderColor: 'rgba(255,255,255,0.1)' }}
                         >
-                          {teamStyle?.code?.substring(0, 1) || 'K'}
+                          {style?.code?.substring(0, 1) || 'K'}
                         </div>
-                     </div>
+                      </div>
 
-                     {/* 팀명 출력 (매핑된 displayName 사용) */}
-                     <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 leading-tight break-keep">
-                       {displayName}
-                     </h2>
-                     
-                     {/* Rank or Legacy Badge */}
-                     <div className="inline-block px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mt-2">
-                       <p className="text-base font-mono font-bold text-slate-300">
-                         {isLegend ? "KBO LEGEND TEAM" : `Current Rank #${teamStyle?.rank}`}
-                       </p>
-                     </div>
-                  </div>
-               </div>
-            </div>
+                      {/* Team Name */}
+                      <h3 className={`font-black text-white mb-2 break-keep ${isFirst ? 'text-2xl' : 'text-xl'}`}>
+                        {displayName}
+                      </h3>
+                      <p className="text-slate-400 font-bold mb-4">{team.year} 시즌</p>
 
-            {/* Right: Analysis Reason */}
-            <div className="flex-1 text-center xl:text-left space-y-10 w-full max-w-3xl">
-               <div>
-                  <h3 className="text-4xl font-black text-white mb-4 leading-tight">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400">데이터가 지목한</span><br/>
-                    최적의 구단입니다.
-                  </h3>
-               </div>
-
-               <div className="bg-white/5 border border-white/5 rounded-[2rem] p-10 shadow-inner relative overflow-hidden min-h-[320px] flex flex-col">
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-bl-full"></div>
-                 
-                 <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-3">
-                   <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                   Matching Analysis
-                 </h4>
-                 
-                 <div className="text-slate-100 leading-relaxed text-xl font-light whitespace-pre-line flex-1">
-                   <ReactMarkdown
-                     components={{
-                       strong: ({node, ...props}) => <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400" {...props} />
-                     }}
-                   >
-                     {reason}
-                   </ReactMarkdown>
-                 </div>
-               </div>
-
-               <div className="flex flex-col sm:flex-row gap-5 pt-4">
-                  <button 
-                    onClick={onCancel}
-                    className="flex-1 bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white font-black py-5 rounded-xl text-xl shadow-[0_0_30px_rgba(236,72,153,0.3)] hover:shadow-[0_0_50px_rgba(34,211,238,0.5)] transition-all transform hover:-translate-y-1"
-                  >
-                    메인으로 돌아가기
-                  </button>
-                  <button 
-                     onClick={() => { setStep(0); setAnswers({}); setApiResult(null); }}
-                     className="flex-1 px-8 py-5 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-all font-bold text-lg"
-                  >
-                    다시 분석하기
-                  </button>
-               </div>
-            </div>
-
+                      {/* Stats Summary */}
+                      <div className="mt-auto w-full bg-white/5 rounded-xl p-4 text-xs text-slate-300 leading-relaxed border border-white/5">
+                        {team.statsSummary}
+                      </div>
+                   </div>
+                </motion.div>
+              );
+            })}
           </div>
+
+          {/* Insight / Reason Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="bg-white/5 border border-white/5 rounded-[2rem] p-8 md:p-10 shadow-inner relative overflow-hidden"
+          >
+             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-bl-full"></div>
+             
+             <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-3">
+               <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+               AI Matching Insight
+             </h4>
+             
+             <div className="text-slate-100 leading-relaxed text-lg font-light whitespace-pre-line markdown-body">
+               <ReactMarkdown
+                 components={{
+                   strong: ({node, ...props}) => <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400" {...props} />
+                 }}
+               >
+                 {topTeam.reason}
+               </ReactMarkdown>
+             </div>
+          </motion.div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 pt-8 justify-center">
+            <button 
+              onClick={onCancel}
+              className="w-full sm:w-auto px-8 bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white font-black py-4 rounded-xl text-lg shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_40px_rgba(34,211,238,0.5)] transition-all transform hover:-translate-y-1"
+            >
+              메인으로 돌아가기
+            </button>
+            <button 
+                onClick={() => { setStep(0); setAnswers({}); setApiResult(null); }}
+                className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-all font-bold text-lg"
+            >
+              다시 분석하기
+            </button>
+          </div>
+
         </div>
       </div>
     );
