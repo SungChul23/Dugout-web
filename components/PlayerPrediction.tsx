@@ -889,7 +889,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                  
                  <div className="relative z-10 flex flex-col justify-center min-h-[120px]">
                       <h3 className={`text-4xl md:text-6xl font-black drop-shadow-sm tracking-tight ${textColorClass}`}>
-                        {teamNameKR} <span className="font-light opacity-80">2026 시즌 성적 예측</span>
+                        {teamNameKR} <span className="font-light opacity-80">선수별 2026 시즌 예측</span>
                       </h3>
                  </div>
               </div>

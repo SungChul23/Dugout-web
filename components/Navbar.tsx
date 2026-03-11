@@ -12,6 +12,7 @@ interface NavbarProps {
   
   // Navigation Handlers
   onNavigate?: (view: string) => void;
+  onNoticeClick?: () => void;
 }
 
 // 메뉴 구조 및 테마 색상 정의
@@ -52,7 +53,8 @@ const Navbar: React.FC<NavbarProps> = ({
   onLoginClick, 
   onLogoutClick,
   onProfileClick,
-  onNavigate
+  onNavigate,
+  onNoticeClick
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
@@ -243,7 +245,20 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* 3. Right Actions (User Profile) */}
-        <div className="flex items-center justify-end flex-shrink-0 relative z-50">
+        <div className="flex items-center justify-end flex-shrink-0 relative z-50 gap-4">
+           {/* Notice Bell Icon */}
+           <button 
+             onClick={onNoticeClick}
+             className="relative p-2 text-slate-400 hover:text-white transition-colors group"
+             aria-label="공지사항"
+           >
+             <svg className="w-6 h-6 group-hover:animate-swing origin-top" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+             </svg>
+             {/* Notification Dot */}
+             <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+           </button>
+
           {user ? (
             /* Logged In View */
             <div className="flex items-center gap-6 animate-fade-in-up pl-6 border-l border-white/10 h-12">

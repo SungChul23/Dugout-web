@@ -117,15 +117,14 @@ export const FEATURES: Feature[] = [
 ];
 
 export const TICKER_ITEMS: TickerItem[] = [
-  { id: '1', type: 'TREND', text: 'LIVE TREND', highlight: true },
-  { id: '2', type: 'SPEED', text: '최근 5분 언급 급상승: 김도영 (KIA)', value: '142%' },
-  { id: '3', type: 'SPEED', text: '타구 속도 1위: 페라자 (182km/h)' },
-  { id: '4', type: 'PREDICTION', text: '골든글러브 예측: 유격수 부문 변동 감지' },
-  { id: '5', type: 'TICKET', text: '티켓 마감임박: LG vs 두산 (잠실)', value: '잔여 300석' },
-  { id: '6', type: 'TREND', text: 'LIVE TREND', highlight: true },
-  { id: '7', type: 'SPEED', text: '최근 5분 언급 급상승: 김도영 (KIA)', value: '142%' },
-  { id: '8', type: 'SPEED', text: '타구 속도 1위: 페라자 (182km/h)' },
-  { id: '9', type: 'PREDICTION', text: '골든글러브 예측: 유격수 부문 변동 감지' },
+  { id: '1', type: 'TREND', text: 'SYSTEM NOTICE', highlight: true },
+  { id: '2', type: 'SPEED', text: '현재 실시간 데이터 파이프라인 구축 중입니다.' },
+  { id: '3', type: 'PREDICTION', text: '2026 KBO 정규시즌 개막에 맞춰 정식 서비스가 시작됩니다.' },
+  { id: '4', type: 'TICKET', text: '더그아웃 AI 분석 엔진 최적화 진행 중' },
+  { id: '5', type: 'TREND', text: 'SYSTEM NOTICE', highlight: true },
+  { id: '6', type: 'SPEED', text: '현재 실시간 데이터 파이프라인 구축 중입니다.' },
+  { id: '7', type: 'PREDICTION', text: '2026 KBO 정규시즌 개막에 맞춰 정식 서비스가 시작됩니다.' },
+  { id: '8', type: 'TICKET', text: '더그아웃 AI 분석 엔진 최적화 진행 중' },
 ];
 
 // Mock Data for Dashboard

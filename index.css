@@ -1,0 +1,34 @@
+@media (min-width: 1024px) {
+  html {
+    font-size: 14px; /* Desktop: Scale down to 87.5% (simulates ~85-90% zoom) */
+  }
+}
+
+@media (min-width: 1536px) {
+  html {
+    font-size: 16px; /* Large screens: Restore to 100% or keep scaled if preferred */
+  }
+}
+
+body {
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  background-color: #020617;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

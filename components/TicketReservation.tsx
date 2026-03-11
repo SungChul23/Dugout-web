@@ -23,7 +23,6 @@ const getVendorInfo = (url: string | undefined) => {
   if (url.includes('ticketlink')) return { name: '티켓링크', color: 'bg-red-500' };
   if (url.includes('interpark')) return { name: '인터파크', color: 'bg-purple-500' };
   if (url.includes('lotte')) return { name: '롯데 자이언츠', color: 'bg-[#041E42]' };
-  if (url.includes('ncdinos')) return { name: 'NC 다이노스', color: 'bg-[#315288]' };
   return { name: '구단 홈페이지', color: 'bg-brand-accent' };
 };
 

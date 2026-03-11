@@ -347,15 +347,15 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
              style={{ background: `linear-gradient(135deg, ${teamColor}, #020617 80%)` }}
            ></div>
            
-           <div className="relative z-10 p-12 md:p-16 flex flex-col md:flex-row justify-between items-end gap-8">
+           <div className="relative z-10 p-6 md:p-16 flex flex-col md:flex-row justify-between items-end gap-8">
               {/* Settings Button - Top Right */}
-              <div className="absolute top-8 right-8 z-50">
+              <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50">
                 <div className="relative">
                   <button
                     onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                    className="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                    className="p-2 md:p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <Settings className="w-8 h-8" />
+                    <Settings className="w-6 h-6 md:w-8 md:h-8" />
                   </button>
                   
                   {/* Settings Dropdown */}
@@ -377,54 +377,65 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
               </div>
 
               <div className="relative">
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-4 md:mb-6">
                    <span 
-                    className="px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest border"
+                    className="px-3 py-1 md:px-4 md:py-1.5 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest border"
                     style={{ borderColor: teamColor, color: teamColor, backgroundColor: `${teamColor}11` }}
                    >
                      My Favorite Team
                    </span>
                 </div>
                 {/* 한글 팀명 표시 */}
-                <h1 className="text-6xl md:text-8xl font-black text-white uppercase italic tracking-tighter leading-none mb-6">
+                <h1 className="text-4xl md:text-8xl font-black text-white uppercase italic tracking-tighter leading-none mb-4 md:mb-6">
                   {displayTeamName.split(' ')[0]} <span style={{ color: teamColor }}>{displayTeamName.split(' ')[1] || ''}</span>
                 </h1>
                 
                 {/* 팀 슬로건 표시 */}
                 {slogan ? (
-                  <div className="flex items-start gap-4">
-                     <svg className="w-8 h-8 text-white/40 mt-1 transform rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.0548 14.5946 14.6596 15.6329 13.5651C16.8926 12.3023 18.5725 11.6667 21.0001 11.6667L21.0001 10.3333C18.6672 10.3333 16.9242 9.69769 15.6644 8.52906C14.6261 7.51909 14.0485 6.09503 14.0485 4L11.0485 4C11.0485 6.7454 11.8532 8.87708 13.4111 10.6667C12.0569 10.6667 10.7495 10.6667 9.98292 10.6667L9.98292 11.6667C10.6133 11.6667 11.7766 11.6667 12.969 11.6667C11.3813 13.5186 10.6133 15.6811 10.6133 18.25L10.6133 21L14.017 21ZM4.98292 21L4.98292 18C4.98292 16.0548 5.56052 14.6596 6.59877 13.5651C7.85848 12.3023 9.53837 11.6667 11.966 11.6667L11.966 10.3333C9.63309 10.3333 7.89012 9.69769 6.63032 8.52906C5.59207 7.51909 5.01446 6.09503 5.01446 4L2.01446 4C2.01446 6.7454 2.81912 8.87708 4.377 10.6667C3.02283 10.6667 1.71542 10.6667 0.948835 10.6667L0.948835 11.6667C1.57919 11.6667 2.74249 11.6667 3.93489 11.6667C2.34721 13.5186 1.57919 15.6811 1.57919 18.25L1.57919 21L4.98292 21Z" /></svg>
-                     <p className="text-2xl md:text-3xl text-slate-200 font-serif italic tracking-wide font-medium" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+                  <div className="flex items-start gap-3 md:gap-4">
+                     <svg className="w-6 h-6 md:w-8 md:h-8 text-white/40 mt-1 transform rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.0548 14.5946 14.6596 15.6329 13.5651C16.8926 12.3023 18.5725 11.6667 21.0001 11.6667L21.0001 10.3333C18.6672 10.3333 16.9242 9.69769 15.6644 8.52906C14.6261 7.51909 14.0485 6.09503 14.0485 4L11.0485 4C11.0485 6.7454 11.8532 8.87708 13.4111 10.6667C12.0569 10.6667 10.7495 10.6667 9.98292 10.6667L9.98292 11.6667C10.6133 11.6667 11.7766 11.6667 12.969 11.6667C11.3813 13.5186 10.6133 15.6811 10.6133 18.25L10.6133 21L14.017 21ZM4.98292 21L4.98292 18C4.98292 16.0548 5.56052 14.6596 6.59877 13.5651C7.85848 12.3023 9.53837 11.6667 11.966 11.6667L11.966 10.3333C9.63309 10.3333 7.89012 9.69769 6.63032 8.52906C5.59207 7.51909 5.01446 6.09503 5.01446 4L2.01446 4C2.01446 6.7454 2.81912 8.87708 4.377 10.6667C3.02283 10.6667 1.71542 10.6667 0.948835 10.6667L0.948835 11.6667C1.57919 11.6667 2.74249 11.6667 3.93489 11.6667C2.34721 13.5186 1.57919 15.6811 1.57919 18.25L1.57919 21L4.98292 21Z" /></svg>
+                     <p className="text-xl md:text-3xl text-slate-200 font-serif italic tracking-wide font-medium" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
                        {slogan}
                      </p>
                   </div>
                 ) : (
-                  <p className="text-slate-400 font-light text-xl">
+                  <p className="text-slate-400 font-light text-lg md:text-xl">
                     {user.nickname}님의 전용 데이터 대시보드
                   </p>
                 )}
               </div>
 
               {/* Rank Card inside Header */}
-              <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-[2rem] p-8 flex items-center gap-10 min-w-[320px] shadow-xl">
-                 <div>
-                    <span className="block text-sm text-slate-400 uppercase tracking-widest mb-1 font-bold">Current Rank</span>
-                    <span className="text-6xl font-black text-white italic">#{myTeam.rank || '-'}</span>
-                 </div>
-                 <div className="h-16 w-[1px] bg-white/10"></div>
-                 <div>
-                    <div className="flex justify-between w-40 mb-2">
-                      <span className="text-sm text-slate-400">Win Rate</span>
-                      <span className="text-sm font-mono font-bold" style={{ color: teamColor }}>{myTeam.winRate || '-.--'}</span>
-                    </div>
-                    <div className="w-40 h-2.5 bg-slate-700 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full" 
-                        style={{ width: `${(myTeam.winRate || 0) * 100}%`, backgroundColor: teamColor }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-3 text-right font-medium">게임차 {myTeam.gamesBehind ?? '-'}</p>
-                 </div>
+              <div className="relative">
+                <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 flex items-center gap-6 md:gap-10 min-w-full md:min-w-[320px] shadow-xl opacity-30 pointer-events-none select-none filter blur-[3px]">
+                   <div>
+                      <span className="block text-xs md:text-sm text-slate-400 uppercase tracking-widest mb-1 font-bold">Current Rank</span>
+                      <span className="text-4xl md:text-6xl font-black text-white italic">#{myTeam.rank || '-'}</span>
+                   </div>
+                   <div className="h-12 md:h-16 w-[1px] bg-white/10"></div>
+                   <div className="flex-1 md:flex-none">
+                      <div className="flex justify-between w-full md:w-40 mb-2">
+                        <span className="text-xs md:text-sm text-slate-400">Win Rate</span>
+                        <span className="text-xs md:text-sm font-mono font-bold" style={{ color: teamColor }}>{myTeam.winRate || '-.--'}</span>
+                      </div>
+                      <div className="w-full md:w-40 h-2 md:h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full" 
+                          style={{ width: `${(myTeam.winRate || 0) * 100}%`, backgroundColor: teamColor }}
+                        ></div>
+                      </div>
+                      <p className="text-[10px] md:text-xs text-slate-500 mt-2 md:mt-3 text-right font-medium">게임차 {myTeam.gamesBehind ?? '-'}</p>
+                   </div>
+                </div>
+                {/* Coming Soon Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="bg-black/80 border border-white/10 px-6 py-3 rounded-2xl shadow-2xl backdrop-blur-sm">
+                    <p className="text-white font-bold text-sm md:text-base flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+                      2026 KBO 리그 개막 후 제공됩니다.
+                    </p>
+                  </div>
+                </div>
               </div>
            </div>
         </header>
@@ -517,7 +528,7 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
                     <div className="absolute top-0 left-0 right-0 h-32 opacity-20" style={{ background: `linear-gradient(180deg, ${cardColor}, transparent)` }}></div>
                     
                     {/* Content Container */}
-                    <div className="relative z-10 flex flex-col h-full p-8">
+                    <div className="relative z-10 flex flex-col h-full p-6 md:p-8">
                       
                       {/* Top Row: Position & Team */}
                       <div className="flex justify-between items-start mb-4">
@@ -542,10 +553,10 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
                       </div>
 
                       {/* Player Name */}
-                      <div className="mb-8">
-                          <h4 className="text-4xl font-black text-white italic tracking-tighter leading-none mb-1">
+                      <div className="mb-6 md:mb-8">
+                          <h4 className="text-3xl md:text-4xl font-black text-white italic tracking-tighter leading-none mb-1">
                               {insight.backNumber && (
-                                  <span className="text-2xl text-white/40 mr-2 not-italic font-sans">{insight.backNumber}</span>
+                                  <span className="text-xl md:text-2xl text-white/40 mr-2 not-italic font-sans">{insight.backNumber}</span>
                               )}
                               {insight.name}
                           </h4>

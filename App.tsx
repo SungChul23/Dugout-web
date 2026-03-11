@@ -16,6 +16,8 @@ import GameSchedule from './components/GameSchedule';
 import TeamPlayerStats from './components/TeamPlayerStats';
 import PlayerPrediction from './components/PlayerPrediction'; 
 import FaAnalysis from './components/FaAnalysis'; // New Import
+import NoticeModal from './components/NoticeModal';
+import { AnimatePresence } from 'framer-motion';
 
 interface User {
   nickname: string;
@@ -26,6 +28,7 @@ interface User {
 function App() {
   const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction' | 'faAnalysis'>('home');
   const [user, setUser] = useState<User | null>(null);
+  const [showNotice, setShowNotice] = useState(false);
 
   const navigateToHome = () => setView('home');
   const navigateToSignup = () => setView('signup');
@@ -140,7 +143,12 @@ function App() {
         onLogoutClick={handleLogout}
         onProfileClick={navigateToDashboard}
         onNavigate={handleMenuClick}
+        onNoticeClick={() => setShowNotice(true)}
       />
+
+      <AnimatePresence>
+        {showNotice && <NoticeModal onClose={() => setShowNotice(false)} />}
+      </AnimatePresence>
 
       <main className="relative pt-20 md:pt-28 pb-12 overflow-hidden min-h-[calc(100vh-80px)]">
         {view === 'home' && (

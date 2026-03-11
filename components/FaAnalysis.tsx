@@ -174,9 +174,9 @@ const GradeBadge: React.FC<{ grade: FaGrade }> = ({ grade }) => {
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center w-24 h-36 rounded-b-2xl border-x border-b absolute top-0 right-8 z-20 bg-[#0f172a] border-white/10 ${colorClass} shadow-xl`}>
-      <span className="text-xs font-black tracking-widest opacity-80 mb-1">{label}</span>
-      <span className={`text-7xl font-black leading-none mt-0 drop-shadow-xl ${shadowClass}`}>{grade}</span>
+    <div className={`flex flex-col items-center justify-center w-16 h-24 md:w-24 md:h-36 rounded-b-xl md:rounded-b-2xl border-x border-b absolute top-0 right-4 md:right-8 z-20 bg-[#0f172a] border-white/10 ${colorClass} shadow-xl`}>
+      <span className="text-[10px] md:text-xs font-black tracking-widest opacity-80 mb-1">{label}</span>
+      <span className={`text-4xl md:text-7xl font-black leading-none mt-0 drop-shadow-xl ${shadowClass}`}>{grade}</span>
     </div>
   );
 };
@@ -660,10 +660,10 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
 
                     <div className="px-12 pb-12 -mt-24 relative z-10">
                        {/* Profile Header */}
-                       <div className="flex flex-col md:flex-row gap-10 items-start mb-16">
+                       <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-start mb-10 md:mb-16">
                           {/* Grade Badge Large with Neon */}
                           <div 
-                            className="w-40 h-40 rounded-[2rem] flex items-center justify-center text-8xl font-black shadow-2xl border-4 border-[#0a0f1e] relative group"
+                            className="w-28 h-28 md:w-40 md:h-40 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-5xl md:text-8xl font-black shadow-2xl border-4 border-[#0a0f1e] relative group flex-shrink-0"
                             style={{ 
                               backgroundColor: getGradeColorHex(selectedPlayer.grade), 
                               color: '#000',
@@ -671,22 +671,22 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
                             }}
                           >
                              {selectedPlayer.grade}
-                             <div className="absolute -bottom-4 px-4 py-1.5 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-full shadow-lg">Grade</div>
+                             <div className="absolute -bottom-3 md:-bottom-4 px-3 md:px-4 py-1 md:py-1.5 bg-black text-white text-[10px] md:text-xs font-bold uppercase tracking-widest rounded-full shadow-lg">Grade</div>
                           </div>
 
-                          <div className="flex-1 pt-10">
-                             <div className="flex flex-wrap items-center gap-4 mb-3">
-                                <span className="text-slate-400 font-bold text-xl">{selectedPlayer.position}</span>
-                                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full"></span>
-                                <span className="text-slate-400 font-bold text-xl">{selectedPlayer.age}세</span>
-                                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full"></span>
+                          <div className="flex-1 pt-2 md:pt-10">
+                             <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-2 md:mb-3">
+                                <span className="text-slate-400 font-bold text-lg md:text-xl">{selectedPlayer.position}</span>
+                                <span className="w-1 md:w-1.5 h-1 md:h-1.5 bg-slate-500 rounded-full"></span>
+                                <span className="text-slate-400 font-bold text-lg md:text-xl">{selectedPlayer.age}세</span>
+                                <span className="w-1 md:w-1.5 h-1 md:h-1.5 bg-slate-500 rounded-full"></span>
                                 <FaStatusBadge status={selectedPlayer.faStatus} />
                              </div>
-                             <h2 className="text-6xl font-black text-white mb-6 tracking-tight">{selectedPlayer.name}</h2>
+                             <h2 className="text-4xl md:text-6xl font-black text-white mb-4 md:mb-6 tracking-tight">{selectedPlayer.name}</h2>
                              <div className="flex items-center gap-4">
-                                <div className="px-6 py-3 rounded-xl bg-white/5 border border-white/10">
-                                   <span className="text-xs text-slate-500 block mb-1 uppercase tracking-wider font-bold">Current Salary (Est.)</span>
-                                   <span className="text-2xl font-black text-white font-mono">{selectedPlayer.currentSalary}</span>
+                                <div className="px-4 md:px-6 py-2 md:py-3 rounded-xl bg-white/5 border border-white/10">
+                                   <span className="text-[10px] md:text-xs text-slate-500 block mb-1 uppercase tracking-wider font-bold">Current Salary (Est.)</span>
+                                   <span className="text-xl md:text-2xl font-black text-white font-mono">{selectedPlayer.currentSalary}</span>
                                 </div>
                              </div>
                           </div>
@@ -776,15 +776,15 @@ const FaAnalysis: React.FC<FaAnalysisProps> = ({ onCancel, user }) => {
                             <span className="text-lg text-slate-400 font-bold font-mono">/ {player.age}세</span>
                         </div>
                         
-                        <h3 className="text-5xl font-black text-white mb-6 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
+                        <h3 className="text-3xl md:text-5xl font-black text-white mb-4 md:mb-6 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
                           {player.name}
                         </h3>
                         
                         {/* Pride Statement - Removed quotes, Removed line-clamp */}
-                        <div className="relative pl-2 pr-12">
+                        <div className="relative pl-2 pr-4 md:pr-12">
                            <div className="absolute -left-2 top-0 bottom-0 w-1.5 bg-gradient-to-b from-white/40 to-transparent rounded-full"></div>
                            <p 
-                             className="text-2xl font-serif italic font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 leading-snug drop-shadow-md whitespace-pre-line"
+                             className="text-lg md:text-2xl font-serif italic font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 leading-snug drop-shadow-md whitespace-pre-line"
                            >
                              {cleanSummary(player.predictionSummary)}
                            </p>
