@@ -170,7 +170,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess, onFindTeamCli
           bounce: 0.3,
           x: { type: "tween", duration: 0.4 } 
         }}
-        className="bg-[#0a0f1e]/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.7)] relative w-full max-w-5xl my-4 md:my-8 flex flex-col md:flex-row overflow-hidden max-h-[85vh]"
+        className="bg-[#0a0f1e]/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.7)] relative w-full max-w-5xl flex flex-col md:flex-row overflow-hidden max-h-[90vh]"
       >
         {/* Left Side: Branding / Guide (Hidden on small screens) */}
         <div className="hidden md:flex md:w-5/12 bg-gradient-to-br from-brand-dark to-[#0f172a] p-10 flex-col justify-between relative overflow-hidden border-r border-white/5">

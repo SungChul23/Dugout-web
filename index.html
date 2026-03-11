@@ -4,26 +4,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DUGOUT - Pro Baseball Analytics</title>
+
+    <title>DUGOUT - 관중석이 아닌, 더그아웃의 시선으로.</title>
+    <meta
+      name="description"
+      content="DUGOUT은 KBO 데이터 분석, AI 예측, 선수 비교, 실시간 기록과 인사이트를 제공하는 야구 데이터 플랫폼입니다. 관중석이 아닌, 더그아웃의 시선으로 경기를 해석합니다."
+    />
+    <meta
+      name="keywords"
+      content="DUGOUT, 더그아웃, KBO, 야구 데이터, 야구 분석, AI 예측, 선수 비교, 실시간 기록, KBO 순위, 야구 인사이트"
+    />
+    <meta name="author" content="DUGOUT" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#020617" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DUGOUT" />
+    <meta property="og:title" content="DUGOUT - 관중석이 아닌, 더그아웃의 시선으로." />
+    <meta
+      property="og:description"
+      content="KBO 데이터 분석, AI 예측, 선수 비교, 실시간 기록과 인사이트를 제공하는 야구 데이터 플랫폼 DUGOUT."
+    />
+    <meta property="og:url" content="https://dugout.cloud" />
+    <meta property="og:image" content="https://dugout.cloud/og-image.png" />
+    <meta property="og:locale" content="ko_KR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DUGOUT - 관중석이 아닌, 더그아웃의 시선으로." />
+    <meta
+      name="twitter:description"
+      content="KBO 데이터 분석, AI 예측, 선수 비교, 실시간 기록과 인사이트를 제공하는 야구 데이터 플랫폼 DUGOUT."
+    />
+    <meta name="twitter:image" content="https://dugout.cloud/og-image.png" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://dugout.cloud" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&family=Noto+Serif+KR:wght@300;400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&family=Noto+Serif+KR:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
               brand: {
-                dark: '#020617', // Slate 950
-                primary: '#3b82f6', // Blue 500
-                accent: '#06b6d4', // Cyan 500
-                glow: '#8b5cf6', // Violet 500
+                dark: '#020617',
+                primary: '#3b82f6',
+                accent: '#06b6d4',
+                glow: '#8b5cf6',
               }
             },
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
               mono: ['JetBrains Mono', 'monospace'],
+              serifkr: ['Noto Serif KR', 'serif'],
             },
             animation: {
               'spin-slow': 'spin 30s linear infinite',
@@ -42,7 +92,7 @@
               },
               'pulse-glow': {
                 '0%, 100%': { opacity: 1, filter: 'brightness(1)' },
-                '50%': { opacity: .7, filter: 'brightness(1.5)' },
+                '50%': { opacity: 0.7, filter: 'brightness(1.5)' },
               },
               marquee: {
                 '0%': { transform: 'translateX(0)' },
@@ -69,49 +119,63 @@
             }
           }
         }
-      }
+      };
     </script>
+
     <style>
+      html {
+        background-color: #020617;
+      }
+
       body {
         background-color: #020617;
         color: white;
         overflow-x: hidden;
+        margin: 0;
       }
+
       /* Hide scrollbar for clean UI */
       ::-webkit-scrollbar {
         width: 8px;
       }
+
       ::-webkit-scrollbar-track {
         background: #0f172a;
       }
+
       ::-webkit-scrollbar-thumb {
         background: #334155;
         border-radius: 4px;
       }
+
       ::-webkit-scrollbar-thumb:hover {
         background: #475569;
       }
-      
+
       .perspective-container {
         perspective: 2500px;
       }
+
       .transform-style-3d {
         transform-style: preserve-3d;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@^19.2.3",
+          "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+          "react/": "https://esm.sh/react@^19.2.3/"
+        }
+      }
+    </script>
+
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>
