@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API_BASE_URL = "https://dugout.cloud";
+import { api } from '../api';
 
 const KBO_TEAMS = [
   'KIA 타이거즈', '삼성 라이온즈', 'LG 트윈스', '두산 베어스', 'KT 위즈',
@@ -64,14 +63,9 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess, onFindTeamCli
     setNicknameMessage('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/members/check-id?nickname=${encodeURIComponent(formData.nickname)}`);
+      const response = await api.get(`/api/v1/members/check-id?nickname=${encodeURIComponent(formData.nickname)}`);
       
-      if (!response.ok) {
-        throw new Error('서버 통신 오류가 발생했습니다.');
-      }
-
-      // NicknameCheckResponseDto: { isAvailable: boolean, message: string }
-      const data = await response.json();
+      const data = response.data;
       
       // isAvailable 필드가 없는 경우 대비 (Jackson serialization issue 등)
       const available = data.isAvailable !== undefined ? data.isAvailable : data.available;
@@ -124,28 +118,15 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess, onFindTeamCli
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/members/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nickname: formData.nickname,
-          email: formData.email,
-          password: formData.password,
-          favoriteTeamName: formData.favoriteTeamName
-        })
+      const response = await api.post('/api/v1/members/signup', {
+        nickname: formData.nickname,
+        email: formData.email,
+        password: formData.password,
+        favoriteTeamName: formData.favoriteTeamName
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(data.message || '회원가입에 실패했습니다.');
-      }
-
-      // AccessToken 저장
-      if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-      }
-      
       // RefreshToken은 HttpOnly Cookie로 처리됨
 
       setTimeout(() => {
@@ -161,7 +142,7 @@ const Signup: React.FC<SignupProps> = ({ onCancel, onLoginSuccess, onFindTeamCli
       
     } catch (err: any) {
       console.error(err);
-      setError(err.message || '회원가입 처리 중 오류가 발생했습니다.');
+      setError(err.response?.data?.message || err.message || '회원가입 처리 중 오류가 발생했습니다.');
       triggerShake();
       setLoading(false);
     }

@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { TEAMS } from '../constants'; // 팀 정보 및 컬러 매핑을 위해 Import
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API_BASE_URL = "https://dugout.cloud";
+import { api } from '../api';
 
 interface FindMyTeamProps {
   onCancel: () => void;
@@ -126,17 +125,9 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
 
       console.log("Submitting to DUGOUT Analytics:", payload);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/fanexperience/match-team`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const response = await api.post('/api/v1/fanexperience/match-team', payload);
 
-      if (!response.ok) {
-        throw new Error('Analysis Failed');
-      }
-
-      const data: TeamRecommendationResponseDto[] = await response.json();
+      const data: TeamRecommendationResponseDto[] = response.data;
       setApiResult(data);
       
       // 결과 화면으로 이동
@@ -366,7 +357,7 @@ const FindMyTeam: React.FC<FindMyTeamProps> = ({ onCancel }) => {
         </div>
         
         <h2 className="text-3xl font-black text-white mb-4 text-center">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400">DUGOUT Data Analytics</span>가<br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400">DUGOUT 스카우터</span>가<br/>
           당신의 야구 DNA를 분석 중입니다.
         </h2>
         <p className="text-slate-400 text-center max-w-md">

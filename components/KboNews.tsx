@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TEAMS } from '../constants';
-
-const API_BASE_URL = "https://dugout.cloud";
+import { api } from '../api';
 
 // TEAMS 상수를 기반으로 뉴스 카테고리 생성 (순서 및 컬러 동기화)
 const KBO_NEWS_CATEGORIES = TEAMS.map(team => {

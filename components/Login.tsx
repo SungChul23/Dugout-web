@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API_BASE_URL = "https://dugout.cloud";
+import { api } from '../api';
 
 interface LoginProps {
   onCancel: () => void;
@@ -37,38 +36,26 @@ const Login: React.FC<LoginProps> = ({ onCancel, onSignupClick, onLoginSuccess }
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/members/login`, {
-       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      const response = await api.post('/api/v1/members/login', {
         email: formData.email,
         password: formData.password
-      })
-    });
+      });
 
-    if (!response.ok) {
-      throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+      const data = response.data;
+      
+      setSuccess(true);
+      
+      setTimeout(() => {
+        onLoginSuccess(data.nickname, data.favoriteTeamName, data.teamSlogan); 
+      }, 800);
+
+    } catch (err) {
+      console.error(err);
+      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+    } finally {
+      setLoading(false);
     }
-
-    const data = await response.json();
-    
-    if (data.accessToken) {
-      localStorage.setItem('accessToken', data.accessToken);
-    }
-    
-    setSuccess(true);
-    
-    setTimeout(() => {
-      onLoginSuccess(data.nickname, data.favoriteTeamName, data.teamSlogan); 
-    }, 800);
-
-  } catch (err) {
-    console.error(err);
-    setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <motion.div 

@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { TEAMS } from '../constants';
 import { Settings, LogOut, Trash2 } from 'lucide-react';
-
-const API_BASE_URL = "https://dugout.cloud";
+import { api } from '../api';
 
 interface MyDashboardProps {
   user: { nickname: string; favoriteTeam?: string; teamSlogan?: string };
@@ -147,27 +146,9 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
   
   // 데이터 가져오기
   const fetchDashboard = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/dashboard`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
-      } else {
-        console.error("Failed to fetch dashboard data");
-      }
+      const response = await api.get('/api/v1/dashboard');
+      setDashboardData(response.data);
     } catch (error) {
       console.error("API Error:", error);
     } finally {
@@ -181,21 +162,10 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
 
   // 선수 제거 확인 및 실행
   const confirmRemovePlayer = async (slotNumber: number) => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
-
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/player?slotNumber=${slotNumber}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        closeModal();
-        fetchDashboard(); 
-      }
+      await api.delete(`/api/v1/dashboard/player?slotNumber=${slotNumber}`);
+      closeModal();
+      fetchDashboard(); 
     } catch (error) {
       console.error("Remove Player Error:", error);
     }
@@ -221,36 +191,18 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
       type: 'confirm', // Use error type for destructive action
       confirmText: '탈퇴하기',
       onConfirm: async () => {
-        const token = localStorage.getItem('accessToken');
-        if (!token) return;
-
         try {
-          const response = await fetch(`${API_BASE_URL}/api/v1/members/me`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-
-          if (response.ok) {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            window.location.reload(); // Reload to reset app state
-          } else {
-            const errorMsg = await response.text();
-            setModalState({
-              isOpen: true,
-              title: '탈퇴 실패',
-              message: errorMsg || '회원 탈퇴 중 오류가 발생했습니다.',
-              type: 'error',
-            });
-          }
-        } catch (error) {
+          await api.delete('/api/v1/members/me');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.reload(); // Reload to reset app state
+        } catch (error: any) {
           console.error("Delete Account Error:", error);
+          const errorMsg = error.response?.data || error.message;
           setModalState({
             isOpen: true,
-            title: '오류 발생',
-            message: '서버 통신 중 오류가 발생했습니다.',
+            title: '탈퇴 실패',
+            message: errorMsg || '회원 탈퇴 중 오류가 발생했습니다.',
             type: 'error',
           });
         }

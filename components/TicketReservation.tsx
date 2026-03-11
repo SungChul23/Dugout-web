@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TEAMS } from '../constants';
-
-const API_BASE_URL = "https://dugout.cloud";
+import { api } from '../api';
 
 interface TicketReservationProps {
   onCancel: () => void;
@@ -61,18 +60,9 @@ const TicketReservation: React.FC<TicketReservationProps> = ({ onCancel }) => {
     const fetchTickets = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/tickets/teams`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await api.get('/api/v1/tickets/teams');
 
-        if (!response.ok) {
-          throw new Error('티켓 정보를 불러오는데 실패했습니다.');
-        }
-
-        const data = await response.json();
+        const data = response.data;
         setTickets(data);
       } catch (err) {
         console.error(err);

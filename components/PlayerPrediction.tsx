@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Modal from './Modal';
 import { TEAMS } from '../constants';
-
-const API_BASE_URL = "https://dugout.cloud";
+import { api } from '../api';
 
 // --- 한글 팀명 매핑 ---
 const KOREAN_TEAM_NAMES: Record<string, string> = {
@@ -604,13 +603,9 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
       const typeParam = activeTab === 'Batter' ? 'hitter' : 'pitcher';
       
       try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/players?team=${encodeURIComponent(teamName)}&type=${typeParam}`);
+        const response = await api.get(`/api/v1/players?team=${encodeURIComponent(teamName)}&type=${typeParam}`);
         
-        if (!response.ok) {
-          throw new Error('선수 명단을 불러오는 데 실패했습니다.');
-        }
-
-        const data: ServerPlayerDto[] = await response.json();
+        const data: ServerPlayerDto[] = response.data;
         
         const mappedRoster: PlayerRosterItem[] = data.map(item => ({
           id: item.playerId,
@@ -642,13 +637,9 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
     setViewState('detail'); 
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/prediction?playerId=${player.id}`);
+      const response = await api.get(`/api/v1/prediction?playerId=${player.id}`);
       
-      if (!response.ok) {
-        throw new Error('예측 데이터를 불러오는데 실패했습니다.');
-      }
-
-      const data: ServerPredictionDto = await response.json();
+      const data: ServerPredictionDto = response.data;
       
       const isBatter = player.role === 'Batter';
       let metrics: StatMetric[] = [];
@@ -1010,34 +1001,25 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                          <button
                            onClick={async () => {
                              if (!selectedPlayer) return;
-                             const token = localStorage.getItem('accessToken');
-                             if (!token) {
+                             try {
+                               await api.post('/api/v1/dashboard/player', { playerId: selectedPlayer.id });
                                setModalState({
                                  isOpen: true,
-                                 title: '로그인 필요',
-                                 message: '로그인이 필요한 서비스입니다.',
-                                 type: 'error',
+                                 title: '선수 추가 완료',
+                                 message: '대시보드에 선수가 성공적으로 추가되었습니다.',
+                                 type: 'success',
                                });
-                               return;
-                             }
-                             try {
-                               const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/player`, {
-                                 method: 'POST',
-                                 headers: {
-                                   'Authorization': `Bearer ${token}`,
-                                   'Content-Type': 'application/json',
-                                 },
-                                 body: JSON.stringify({ playerId: selectedPlayer.id }),
-                               });
-                               if (response.ok) {
+                             } catch (error: any) {
+                               console.error("Add to Dashboard Error:", error);
+                               if (error.response?.status === 401) {
                                  setModalState({
                                    isOpen: true,
-                                   title: '선수 추가 완료',
-                                   message: '대시보드에 선수가 성공적으로 추가되었습니다.',
-                                   type: 'success',
+                                   title: '로그인 필요',
+                                   message: '로그인이 필요한 서비스입니다.',
+                                   type: 'error',
                                  });
                                } else {
-                                 const errorMsg = await response.text();
+                                 const errorMsg = error.response?.data || '서버 통신 중 오류가 발생했습니다.';
                                  setModalState({
                                    isOpen: true,
                                    title: '선수 추가 실패',
@@ -1045,14 +1027,6 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
                                    type: 'error',
                                  });
                                }
-                             } catch (error) {
-                               console.error("Add to Dashboard Error:", error);
-                               setModalState({
-                                 isOpen: true,
-                                 title: '오류 발생',
-                                 message: '서버 통신 중 오류가 발생했습니다.',
-                                 type: 'error',
-                               });
                              }
                            }}
                            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg group/btn"

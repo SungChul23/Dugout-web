@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { api } from './api';
 import Navbar from './components/Navbar';
 import AnalysisRing from './components/AnalysisRing';
 import Ticker from './components/Ticker';
@@ -29,6 +30,31 @@ function App() {
   const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction' | 'faAnalysis'>('home');
   const [user, setUser] = useState<User | null>(null);
   const [showNotice, setShowNotice] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await api.get('/api/v1/members/me');
+        if (response.data) {
+          setUser({
+            nickname: response.data.nickname,
+            favoriteTeam: response.data.favoriteTeamName,
+            teamSlogan: response.data.teamSlogan,
+          });
+        }
+      } catch (error: any) {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          // Ignore authentication errors
+        } else {
+          console.error("Session restore failed:", error);
+        }
+      } finally {
+        setIsAuthChecking(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const navigateToHome = () => setView('home');
   const navigateToSignup = () => setView('signup');
@@ -93,28 +119,13 @@ function App() {
   const handleLogout = async () => {
     console.log("로그아웃 프로세스 시작"); // 디버깅 로그
 
-    // // 1. 사용자 재확인
-    // if (!window.confirm('정말 로그아웃 하시겠습니까?')) {
-    //   return;
-    // }
-
     try {
-      const accessToken = localStorage.getItem('accessToken');
-
-      // 2. 서버에 로그아웃 알리기 (토큰이 있는 경우만)
-      if (accessToken) {
-        await fetch('https://dugout.cloud/api/v1/members/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-      }
+      // 2. 서버에 로그아웃 알리기
+      await api.post('/api/v1/members/logout');
     } catch (error) {
-      console.error("서버 로그아웃 통신 실패 (로컬 삭제 진행):", error);
+      console.error("서버 로그아웃 통신 실패:", error);
     } finally {
-      // 3. 로컬 스토리지의 모든 인증 정보 삭제 (무조건 실행)
+      // 3. 로컬 스토리지의 모든 인증 정보 삭제 (무조건 실행) - 기존에 남아있을 수 있는 데이터 정리
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('userNickname');
@@ -127,6 +138,10 @@ function App() {
       console.log("로그아웃 완료");
     }
   };
+
+  if (isAuthChecking) {
+    return <div className="min-h-screen bg-brand-dark flex items-center justify-center text-white">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-accent/30 selection:text-white">
