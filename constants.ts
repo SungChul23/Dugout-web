@@ -5,101 +5,111 @@ export const TEAMS: Team[] = [
   { 
     id: '1', 
     name: 'KIA TIGERS', 
+    koreanName: 'KIA 타이거즈',
     code: 'KIA', 
     rank: 1, 
     winRate: 0.612, 
     gamesBehind: 0.0, 
-    color: '#EA0029', // KIA Red (요청: #EA0029)
+    color: '#EA0029', // KIA Red
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/58'
   },
   { 
     id: '2', 
     name: 'SAMSUNG LIONS', 
+    koreanName: '삼성 라이온즈',
     code: 'SAMSUNG', 
     rank: 2, 
     winRate: 0.543, 
     gamesBehind: 5.5, 
-    color: '#2965CC', // Samsung Blue (요청: #074CA1 -> 네온/가시성 위해 밝게 조정)
+    color: '#074CA1', // Samsung Blue
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/57'
   },
   { 
     id: '3', 
     name: 'LG TWINS', 
+    koreanName: 'LG 트윈스',
     code: 'LG', 
     rank: 3, 
     winRate: 0.528, 
     gamesBehind: 7.5, 
-    color: '#C30452', // LG Magenta (요청: #C30452)
+    color: '#C30452', // LG Magenta
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/59'
   },
   { 
     id: '4', 
     name: 'DOOSAN BEARS', 
+    koreanName: '두산 베어스',
     code: 'DOOSAN', 
     rank: 4, 
     winRate: 0.515, 
     gamesBehind: 9.0, 
-    color: '#3E3A85', // Doosan Navy (요청: #1A1748 -> 네온/가시성 위해 밝게 조정)
+    color: '#131230', // Doosan Navy
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB004'
   },
   { 
     id: '5', 
     name: 'KT WIZ', 
+    koreanName: 'KT 위즈',
     code: 'KT', 
     rank: 5, 
     winRate: 0.493, 
     gamesBehind: 12.0, 
-    color: '#D1D1D1', // KT Black+White Mix (요청: #000000 + 흰색 믹스 -> 실버/화이트 네온)
+    color: '#000000', // KT Black
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/62'
   },
   { 
     id: '6', 
     name: 'SSG LANDERS', 
+    koreanName: 'SSG 랜더스',
     code: 'SSG', 
     rank: 6, 
     winRate: 0.489, 
     gamesBehind: 12.5, 
-    color: '#CE0E2D', // SSG Red (요청: #CE0E2D)
+    color: '#CE0E2D', // SSG Red
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/476'
   },
   { 
     id: '7', 
     name: 'HANWHA EAGLES', 
+    koreanName: '한화 이글스',
     code: 'HANWHA', 
     rank: 7, 
     winRate: 0.470, 
     gamesBehind: 15.0, 
-    color: '#FC4E00', // Hanwha Orange (요청: #FC4E00)
+    color: '#FF6600', // Hanwha Orange
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/63'
   },
   { 
     id: '8', 
     name: 'LOTTE GIANTS', 
+    koreanName: '롯데 자이언츠',
     code: 'LOTTE', 
     rank: 8, 
     winRate: 0.465, 
     gamesBehind: 15.5, 
-    color: '#20386B', // Lotte Navy (요청: #041E42 -> 네온/가시성 위해 밝게 조정)
+    color: '#041E42', // Lotte Navy
     ticketUrl: 'https://www.giantsclub.com/html/?pcode=339'
   },
   { 
     id: '9', 
     name: 'NC DINOS', 
+    koreanName: 'NC 다이노스',
     code: 'NC', 
     rank: 9, 
     winRate: 0.450, 
     gamesBehind: 17.5, 
-    color: '#4D73AB', // NC Marine Blue (요청: #315288 -> 네온/가시성 위해 밝게 조정)
+    color: '#315288', // NC Marine Blue
     ticketUrl: 'https://www.ncdinos.com/homepage.do'
   },
   { 
     id: '10', 
     name: 'KIWOOM HEROES', 
+    koreanName: '키움 히어로즈',
     code: 'KIWOOM', 
     rank: 10, 
     winRate: 0.415, 
     gamesBehind: 22.0, 
-    color: '#8B0920', // Kiwoom Burgundy (요청: #570514 -> 네온/가시성 위해 밝게 조정)
+    color: '#570514', // Kiwoom Burgundy
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB003'
   },
 ];

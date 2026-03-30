@@ -220,7 +220,7 @@ function App() {
         {view === 'news' && <KboNews onCancel={navigateToHome} defaultTeam={user?.favoriteTeam} />}
         {view === 'findTeam' && <FindMyTeam onCancel={navigateToHome} />}
         {view === 'schedule' && <GameSchedule onCancel={navigateToHome} user={user} />}
-        {view === 'stats' && <TeamPlayerStats onCancel={navigateToHome} />}
+        {view === 'stats' && <TeamPlayerStats onCancel={navigateToHome} user={user} />}
         {view === 'prediction' && <PlayerPrediction onCancel={navigateToHome} user={user} />}
         {view === 'faAnalysis' && <FaAnalysis onCancel={navigateToHome} user={user} />} 
         {view === 'dashboard' && user && (
@@ -229,6 +229,7 @@ function App() {
             onFindTeamClick={() => handleFeatureClick('8')} 
             onNewsClick={() => handleMenuClick('news')}
             onAddPlayerClick={() => handleMenuClick('prediction')}
+            onRankClick={() => handleMenuClick('stats')}
           />
         )}
       </main>

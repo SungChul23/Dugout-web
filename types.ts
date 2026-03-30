@@ -1,6 +1,7 @@
 export interface Team {
   id: string;
   name: string;
+  koreanName?: string;
   code: string;
   rank: number;
   winRate: number;

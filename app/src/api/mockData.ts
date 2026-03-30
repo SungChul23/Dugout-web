@@ -1,0 +1,95 @@
+import { TeamPerformanceResponseDto } from '../types';
+
+export const mockTeamPerformance: TeamPerformanceResponseDto[] = [
+  {
+    teamId: 1,
+    teamName: "KIA 타이거즈",
+    baseDate: "2026-03-30",
+    avg: 0.285,
+    hr: 120,
+    runs: 650,
+    hits: 1200,
+    rbi: 600,
+    obp: 0.350,
+    ops: 0.780,
+    risp: 0.290,
+    slg: 0.430,
+    phBa: 0.250,
+    multiHit: 150,
+    totalBases: 1800,
+    era: 3.85,
+    wins: 75,
+    so: 1000,
+    sv: 35,
+    hld: 60,
+    wpct: 0.555,
+    whip: 1.35,
+    qs: 65,
+    oppAvg: 0.255,
+    bsv: 15,
+    np: 15000,
+    hrAllowed: 90,
+    sb: 85,
+    sbRate: 0.725,
+    error: 80,
+    fpct: 0.985,
+    dp: 110,
+    csRate: 0.320,
+    oob: 45,
+    sba: 115,
+    pkoR: 10,
+    pkoD: 15,
+    cs: 35,
+    sbAllowed: 75
+  },
+  {
+    teamId: 2,
+    teamName: "LG 트윈스",
+    baseDate: "2026-03-30",
+    avg: 0.279,
+    hr: 105,
+    runs: 620,
+    hits: 1150,
+    rbi: 580,
+    obp: 0.345,
+    ops: 0.760,
+    risp: 0.280,
+    slg: 0.415,
+    phBa: 0.240,
+    multiHit: 130,
+    totalBases: 1700,
+    era: 3.90,
+    wins: 72,
+    so: 950,
+    sv: 30,
+    hld: 55,
+    wpct: 0.530,
+    whip: 1.38,
+    qs: 60,
+    oppAvg: 0.260,
+    bsv: 18,
+    np: 14800,
+    hrAllowed: 95,
+    sb: 90,
+    sbRate: 0.750,
+    error: 75,
+    fpct: 0.988,
+    dp: 105,
+    csRate: 0.310,
+    oob: 40,
+    sba: 120,
+    pkoR: 8,
+    pkoD: 12,
+    cs: 30,
+    sbAllowed: 80
+  }
+];
+
+export const fetchTeamPerformance = async (): Promise<TeamPerformanceResponseDto[]> => {
+  // Simulate API call
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(mockTeamPerformance);
+    }, 500);
+  });
+};

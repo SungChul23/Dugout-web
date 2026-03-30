@@ -10,9 +10,17 @@ interface MyDashboardProps {
   onFindTeamClick: () => void;
   onNewsClick: () => void;
   onAddPlayerClick: () => void;
+  onRankClick?: () => void;
 }
 
 // 서버 DTO 구조
+interface TeamRankSummaryDto {
+  teamId?: number;
+  rank?: number;
+  wdl?: string;
+  winRate?: string;
+}
+
 interface PlayerInsightDto {
   slotNumber: number;
   playerId: number;
@@ -48,6 +56,7 @@ interface DashboardResponse {
   favoriteTeamName: string;
   teamSlogan?: string; 
   bookingUrl?: string; // 티켓 예매 링크
+  teamRank?: TeamRankSummaryDto; // 추가: 선호 팀 순위 정보
   insights: PlayerInsightDto[];
   news: NewsItemDto[]; // 뉴스 리스트
 }
@@ -123,7 +132,7 @@ const SERVER_ID_TO_CODE: Record<string, string> = {
 // HTML 태그 제거 및 따옴표 정리 유틸리티
 const cleanText = (text: string) => text.replace(/<b>/g, '').replace(/<\/b>/g, '').replace(/&quot;/g, '"');
 
-const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNewsClick, onAddPlayerClick }) => {
+const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNewsClick, onAddPlayerClick, onRankClick }) => {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -358,35 +367,31 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
               </div>
 
               {/* Rank Card inside Header */}
-              <div className="relative">
-                <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 flex items-center gap-6 md:gap-10 min-w-full md:min-w-[320px] shadow-xl opacity-30 pointer-events-none select-none filter blur-[3px]">
+              <div 
+                className="relative cursor-pointer group/rank transition-transform hover:scale-105"
+                onClick={onRankClick}
+              >
+                <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 flex items-center gap-6 md:gap-10 min-w-full md:min-w-[320px] shadow-xl transition-all group-hover/rank:border-white/30 group-hover/rank:bg-black/40">
                    <div>
                       <span className="block text-xs md:text-sm text-slate-400 uppercase tracking-widest mb-1 font-bold">Current Rank</span>
-                      <span className="text-4xl md:text-6xl font-black text-white italic">#{myTeam.rank || '-'}</span>
+                      <span className="text-4xl md:text-6xl font-black text-white italic">#{dashboardData?.teamRank?.rank || myTeam.rank || '-'}</span>
                    </div>
                    <div className="h-12 md:h-16 w-[1px] bg-white/10"></div>
                    <div className="flex-1 md:flex-none">
                       <div className="flex justify-between w-full md:w-40 mb-2">
                         <span className="text-xs md:text-sm text-slate-400">Win Rate</span>
-                        <span className="text-xs md:text-sm font-mono font-bold" style={{ color: teamColor }}>{myTeam.winRate || '-.--'}</span>
+                        <span className="text-xs md:text-sm font-mono font-bold" style={{ color: teamColor }}>{dashboardData?.teamRank?.winRate || myTeam.winRate || '-.--'}</span>
                       </div>
                       <div className="w-full md:w-40 h-2 md:h-2.5 bg-slate-700 rounded-full overflow-hidden">
                         <div 
-                          className="h-full rounded-full" 
-                          style={{ width: `${(myTeam.winRate || 0) * 100}%`, backgroundColor: teamColor }}
+                          className="h-full rounded-full transition-all duration-1000" 
+                          style={{ width: `${parseFloat(dashboardData?.teamRank?.winRate || myTeam.winRate?.toString() || '0') * 100}%`, backgroundColor: teamColor }}
                         ></div>
                       </div>
-                      <p className="text-[10px] md:text-xs text-slate-500 mt-2 md:mt-3 text-right font-medium">게임차 {myTeam.gamesBehind ?? '-'}</p>
+                      <p className="text-[10px] md:text-xs text-slate-500 mt-2 md:mt-3 text-right font-medium">
+                        {dashboardData?.teamRank?.wdl ? dashboardData.teamRank.wdl : `게임차 ${myTeam.gamesBehind ?? '-'}`}
+                      </p>
                    </div>
-                </div>
-                {/* Coming Soon Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="bg-black/80 border border-white/10 px-6 py-3 rounded-2xl shadow-2xl backdrop-blur-sm">
-                    <p className="text-white font-bold text-sm md:text-base flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
-                      2026 KBO 리그 개막 후 제공됩니다.
-                    </p>
-                  </div>
                 </div>
               </div>
            </div>
