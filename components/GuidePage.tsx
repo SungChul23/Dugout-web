@@ -153,7 +153,7 @@ const RULES_PITCHING = [
 
 const RULES_JUDGMENT = [
   { title: '인필드 플라이 (Infield Fly)', desc: '0~1아웃, 1·2루 또는 만루에서 내야수가 충분히 잡을 수 있는 뜬공 시 타자 자동 아웃.', caution: '타자만 아웃이며, 주자는 포구 후 태그업 진루가 가능함.' },
-  { title: '체크스윙 (Check Swing)', desc: '방망이를 내다 멈춘 경우 주심이 판정하며, 요청 시 루심이 최종 판단.', caution: '비디오 판독 불가 항목이었으나 2025년 시즌 중 도입 예정.' },
+  { title: '체크스윙 (Check Swing)', desc: '방망이를 내다 멈춘 경우 주심이 판정하며, 요청 시 루심이 최종 판단.', caution: '비디오 판독 불가 항목이었으나 2026년 시즌 도입.' },
   { title: '인터페어런스 (방해)', desc: '공격/수비 측이 상대 플레이를 물리적/시각적으로 방해하는 행위.', caution: '고의성보다 결과적 방해 여부가 판정의 핵심.' },
   { title: '그라운드룰 더블 (Ground Rule Double)', desc: '타구가 바운드되어 담장을 넘어가거나 끼인 경우.', caution: '타자와 주자 모두 2개 베이스 진루권 부여.' },
   { title: '비디오 판독 (Video Review)', desc: '9이닝 내 2회(연장 1회) 요청 가능. 세이프/아웃, 홈런 여부 등이 대상.', caution: '스트라이크/볼 판정은 비디오 판독 대상이 아님.' },
@@ -165,7 +165,6 @@ const RULES_KBO = [
   { title: '더블헤더 규정', desc: '하루 2경기 시 9이닝 고정, 연장전 없음. 1차전 종료 30분 후 2차전 시작.', caution: '정규 경기와 달리 콜드게임 판정이 더 잦을 수 있음.' },
   { title: '지명타자제 (DH)', desc: 'KBO 전 구단 의무 적용. 투수는 타석에 들어서지 않음.', caution: '경기 중 DH가 수비로 들어가면 해당 타순에 투수가 들어가야 함.' },
   { title: '외국인 선수 제한', desc: '팀당 최대 3명 보유(보통 투수2+타자1). 1경기 동시 출장은 2명까지 가능.', caution: '시즌 중 교체 횟수는 제한되어 있으므로 신중한 결정 필요.' },
-  { title: '퓨처스 리그 차이점', desc: '기본 7이닝 경기, 지명타자 의무 동일, 연장전 없음.', caution: '1군과 룰이 다르므로 시청 시 혼동 주의.' },
 ];
 
 const RULES_MISCONCEPTIONS = [
@@ -218,11 +217,11 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...PITCHER_TRADITIONAL, ...PITCHER_ADVANCED].map((item) => (
                   <div key={item.abbr} className={`bg-[#0a0f1e]/60 border border-white/5 p-6 rounded-2xl hover:border-cyan-400/30 transition-all group ${item.highlight ? 'ring-1 ring-cyan-400/20 bg-cyan-400/5' : ''}`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-2xl font-black text-cyan-400 font-mono italic tracking-tighter">{item.abbr}</span>
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{item.name}</span>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-4xl font-black text-cyan-400 font-mono italic tracking-tighter">{item.abbr}</span>
+                      <span className="text-lg font-bold text-slate-500 uppercase tracking-widest">{item.name}</span>
                     </div>
-                    <p className="text-sm text-slate-400 font-light leading-relaxed">{item.desc}</p>
+                    <p className="text-lg text-slate-400 font-light leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -240,11 +239,11 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...BATTER_BASIC, ...BATTER_ADVANCED].map((item) => (
                   <div key={item.abbr} className={`bg-[#0a0f1e]/60 border border-white/5 p-6 rounded-2xl hover:border-pink-500/30 transition-all group ${item.highlight ? 'ring-1 ring-pink-500/20 bg-pink-500/5' : ''}`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-2xl font-black text-pink-500 font-mono italic tracking-tighter">{item.abbr}</span>
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{item.name}</span>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-4xl font-black text-pink-500 font-mono italic tracking-tighter">{item.abbr}</span>
+                      <span className="text-lg font-bold text-slate-500 uppercase tracking-widest">{item.name}</span>
                     </div>
-                    <p className="text-sm text-slate-400 font-light leading-relaxed">{item.desc}</p>
+                    <p className="text-lg text-slate-400 font-light leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -261,10 +260,10 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
               <div className="space-y-4">
                 {POSITIONS.map(pos => (
                   <div key={pos.abbr} className="flex items-start gap-4 bg-white/5 p-5 rounded-2xl border border-white/5 hover:border-pink-500/30 transition-colors">
-                    <div className="min-w-[50px] h-[50px] bg-brand-dark border border-pink-500/30 rounded-lg flex items-center justify-center font-black text-pink-500 text-xl">{pos.code}</div>
+                    <div className="min-w-[60px] h-[60px] bg-brand-dark border border-pink-500/30 rounded-lg flex items-center justify-center font-black text-pink-500 text-2xl">{pos.code}</div>
                     <div>
-                      <h4 className="font-bold text-white text-lg">{pos.name} <span className="text-slate-500 font-mono text-sm">({pos.abbr})</span></h4>
-                      <p className="text-sm text-slate-400 font-light leading-snug">{pos.desc}</p>
+                      <h4 className="font-bold text-white text-2xl mb-1">{pos.name} <span className="text-slate-500 font-mono text-lg">({pos.abbr})</span></h4>
+                      <p className="text-lg text-slate-400 font-light leading-snug">{pos.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -285,8 +284,8 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
                   <div className="space-y-3">
                     {EXPRESSIONS.map(e => (
                       <div key={e.term} className="bg-white/5 p-5 rounded-xl border border-white/5 flex justify-between items-center group hover:border-orange-400/30 transition-all">
-                        <span className="font-bold text-slate-200 group-hover:text-orange-400 transition-colors">{e.term}</span>
-                        <span className="text-xs text-slate-500 font-light max-w-[60%] text-right">{e.desc}</span>
+                        <span className="text-xl font-bold text-slate-200 group-hover:text-orange-400 transition-colors">{e.term}</span>
+                        <span className="text-base text-slate-500 font-light max-w-[60%] text-right">{e.desc}</span>
                       </div>
                     ))}
                   </div>
@@ -299,8 +298,8 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
                   <div className="space-y-3">
                     {SPECIAL_TERMS.map(e => (
                       <div key={e.term} className="bg-white/5 p-5 rounded-xl border border-white/5 flex justify-between items-center group hover:border-brand-glow/30 transition-all">
-                        <span className="font-bold text-slate-200 group-hover:text-brand-glow transition-colors">{e.term}</span>
-                        <span className="text-xs text-slate-500 font-light max-w-[60%] text-right">{e.desc}</span>
+                        <span className="text-xl font-bold text-slate-200 group-hover:text-brand-glow transition-colors">{e.term}</span>
+                        <span className="text-base text-slate-500 font-light max-w-[60%] text-right">{e.desc}</span>
                       </div>
                     ))}
                   </div>
@@ -339,7 +338,7 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
               >
                 <div className="flex items-center gap-4">
                    <div className={`w-1.5 h-6 rounded-full transition-colors ${expandedIndex === idx ? 'bg-pink-500' : 'bg-white/10 group-hover:bg-white/30'}`}></div>
-                   <span className="text-xl font-bold text-white tracking-tight">{rule.title}</span>
+                   <span className="text-2xl font-bold text-white tracking-tight">{rule.title}</span>
                 </div>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${expandedIndex === idx ? 'bg-pink-500 text-white rotate-180' : 'bg-white/5 text-slate-500'}`}>
                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
@@ -349,17 +348,17 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
               <div className={`transition-all duration-500 ${expandedIndex === idx ? 'max-h-[1000px] opacity-100 pb-8 px-7' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 <div className="pt-2 border-t border-white/5">
                   <div className="mt-6 mb-8">
-                    <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Rule Definition</h5>
-                    <p className="text-slate-300 text-lg leading-relaxed font-light">{rule.desc}</p>
+                    <h5 className="text-sm font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Rule Definition</h5>
+                    <p className="text-slate-300 text-xl md:text-2xl leading-relaxed font-light">{rule.desc}</p>
                   </div>
-                  <div className="bg-pink-500/5 border border-pink-500/20 p-5 rounded-2xl relative overflow-hidden">
+                  <div className="bg-pink-500/5 border border-pink-500/20 p-6 rounded-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3 opacity-10 text-pink-500">
                       <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
                     </div>
                     <div className="flex items-center gap-2 mb-3">
-                       <h5 className="text-xs font-black text-pink-500 uppercase tracking-widest">⚠️ Caution & Misconception</h5>
+                       <h5 className="text-sm font-black text-pink-500 uppercase tracking-widest">⚠️ Caution & Misconception</h5>
                     </div>
-                    <p className="text-sm text-pink-200/90 font-medium leading-relaxed">{rule.caution}</p>
+                    <p className="text-lg text-pink-200/90 font-medium leading-relaxed">{rule.caution}</p>
                   </div>
                 </div>
               </div>

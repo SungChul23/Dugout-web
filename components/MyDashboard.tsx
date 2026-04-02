@@ -4,6 +4,7 @@ import Modal from './Modal';
 import { TEAMS } from '../constants';
 import { Settings, LogOut, Trash2 } from 'lucide-react';
 import { api } from '../api';
+import { TeamDailyStats } from './TeamDailyStats';
 
 interface MyDashboardProps {
   user: { nickname: string; favoriteTeam?: string; teamSlogan?: string };
@@ -11,6 +12,7 @@ interface MyDashboardProps {
   onNewsClick: () => void;
   onAddPlayerClick: () => void;
   onRankClick?: () => void;
+  onScheduleClick?: () => void;
 }
 
 // 서버 DTO 구조
@@ -132,10 +134,11 @@ const SERVER_ID_TO_CODE: Record<string, string> = {
 // HTML 태그 제거 및 따옴표 정리 유틸리티
 const cleanText = (text: string) => text.replace(/<b>/g, '').replace(/<\/b>/g, '').replace(/&quot;/g, '"');
 
-const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNewsClick, onAddPlayerClick, onRankClick }) => {
+const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNewsClick, onAddPlayerClick, onRankClick, onScheduleClick }) => {
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'myPick' | 'teamStats'>('myPick');
 
   // Modal State
   const [modalState, setModalState] = useState<{
@@ -397,6 +400,34 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
            </div>
         </header>
 
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-white/10 pb-4 overflow-x-auto hide-scrollbar">
+          <button
+            onClick={() => setActiveTab('myPick')}
+            className={`px-6 py-3 rounded-xl font-bold text-lg transition-all whitespace-nowrap ${
+              activeTab === 'myPick'
+                ? 'bg-brand-accent text-brand-dark shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            내 라인업 (My Pick)
+          </button>
+          <button
+            onClick={() => setActiveTab('teamStats')}
+            className={`px-6 py-3 rounded-xl font-bold text-lg transition-all whitespace-nowrap ${
+              activeTab === 'teamStats'
+                ? 'bg-brand-accent text-brand-dark shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            팀 전체 기록 (Team Stats)
+          </button>
+        </div>
+
+        {activeTab === 'teamStats' ? (
+          <TeamDailyStats />
+        ) : (
+          <>
         {/* 2. Main Grid - Expanded Gap */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
@@ -407,7 +438,7 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
                 <span className="w-2 h-8 rounded-full" style={{ backgroundColor: teamColor }}></span>
                 나의 키 플레이어
               </h3>
-              <span className="text-sm text-slate-500 font-mono">* 실시간 데이터 기반</span>
+              <span className="text-sm text-slate-500 font-mono">* 선수 미래 성적 예측 (시즌 종료 후 최종 성적을 예측합니다.)</span>
             </div>
 
             {/* 카드 높이 및 그리드 Gap 조정 */}
@@ -613,22 +644,24 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
             {/* Additional Chart */}
             <div className="bg-[#0a0f1e]/60 border border-white/5 rounded-[2rem] p-10 flex flex-col md:flex-row gap-10 items-center">
                <div className="flex-1 space-y-5">
-                  <h4 className="text-xl font-bold text-white">이번 주 승부 예측</h4>
+                  <h4 className="text-xl font-bold text-white">다가오는 경기</h4>
                   <p className="text-slate-400 text-base font-light leading-relaxed">
-                    최근 팀 타격 사이클과 상대 선발 투수 데이터를 분석했을 때, 
-                    <span style={{ color: teamColor }} className="font-bold mx-1 text-lg">이번 주 4승 2패</span> 
-                    이상의 성적이 유력합니다.
+                    우리 팀의 다음 경기 일정을 미리 확인하세요. 
+                    <span style={{ color: teamColor }} className="font-bold mx-1 text-lg">상대 전적과 핵심 선수</span> 
+                    데이터를 통해 승리 가능성을 점쳐볼 수 있습니다.
                   </p>
-                  <button className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 mt-4 hover:opacity-80 transition-opacity" style={{ color: teamColor }}>
-                    View Full Analysis <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                  <button 
+                    onClick={onScheduleClick}
+                    className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 mt-4 hover:opacity-80 transition-opacity" 
+                    style={{ color: teamColor }}
+                  >
+                    경기 일정 & 결과 보기 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                   </button>
                </div>
-               <div className="w-full md:w-64 h-40 bg-slate-800/50 rounded-2xl flex items-center justify-center border border-white/5 relative overflow-hidden">
-                  <div className="absolute bottom-0 left-0 right-0 h-full flex items-end justify-between px-6 pb-6">
-                     {[40, 60, 35, 70, 50, 80].map((h, i) => (
-                       <div key={i} className="w-6 rounded-t-md opacity-60 transition-all hover:opacity-100" style={{ height: `${h}%`, backgroundColor: teamColor }}></div>
-                     ))}
-                  </div>
+               <div className="w-full md:w-64 h-40 bg-slate-800/50 rounded-2xl flex items-center justify-center border border-white/5 relative overflow-hidden group">
+                  <svg className="w-20 h-20 opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: teamColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                </div>
             </div>
           </div>
@@ -694,6 +727,8 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
           </div>
 
         </div>
+        </>
+        )}
       </div>
 
       {/* Modal */}

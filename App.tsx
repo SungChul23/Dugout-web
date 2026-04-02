@@ -16,7 +16,8 @@ import FindMyTeam from './components/FindMyTeam';
 import GameSchedule from './components/GameSchedule';
 import TeamPlayerStats from './components/TeamPlayerStats';
 import PlayerPrediction from './components/PlayerPrediction'; 
-import FaAnalysis from './components/FaAnalysis'; // New Import
+import FaAnalysis from './components/FaAnalysis';
+import GoldenGlove from './components/GoldenGlove'; // New Import
 import NoticeModal from './components/NoticeModal';
 import { AnimatePresence } from 'framer-motion';
 
@@ -71,22 +72,16 @@ function App() {
   
   // 통합 네비게이션 핸들러
   const handleMenuClick = (targetView: string) => {
-    // 골든글러브 예외 처리 (Navbar에서 disabled 처리되지만, 방어 코드)
-    if (targetView === 'goldenglove') {
-        // UI에서 이미 막혀있지만 강제 호출 시
-        return;
-    }
-
     const v = targetView as any;
     
     // 로그인 필요한 페이지 체크 (FA 분석 추가)
-    if (['prediction', 'dashboard', 'faAnalysis'].includes(v) && !user) {
+    if (['prediction', 'dashboard', 'faAnalysis', 'goldenglove'].includes(v) && !user) {
        alert('로그인이 필요한 서비스입니다.');
        navigateToLogin();
        return;
     }
 
-    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home', 'prediction', 'faAnalysis'].includes(v)) {
+    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home', 'prediction', 'faAnalysis', 'goldenglove'].includes(v)) {
       setView(v);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -100,10 +95,7 @@ function App() {
     else if (id === '2') handleMenuClick('schedule');
     else if (id === '3') handleMenuClick('news');
     else if (id === '4') handleMenuClick('prediction'); 
-    else if (id === '5') { 
-      // 골든글러브: UI에 "개막 후 제공" 텍스트가 표시되므로 알림 제거
-      return; 
-    }
+    else if (id === '5') handleMenuClick('goldenglove');
     else if (id === '6') handleMenuClick('faAnalysis'); // ID 6: FA 시장 등급 분석
     else if (id === '7') handleMenuClick('tickets');
     else if (id === '8') handleMenuClick('findTeam');
@@ -223,6 +215,7 @@ function App() {
         {view === 'stats' && <TeamPlayerStats onCancel={navigateToHome} user={user} />}
         {view === 'prediction' && <PlayerPrediction onCancel={navigateToHome} user={user} />}
         {view === 'faAnalysis' && <FaAnalysis onCancel={navigateToHome} user={user} />} 
+        {view === 'goldenglove' && <GoldenGlove onCancel={navigateToHome} user={user} />}
         {view === 'dashboard' && user && (
           <MyDashboard 
             user={user} 
@@ -230,6 +223,7 @@ function App() {
             onNewsClick={() => handleMenuClick('news')}
             onAddPlayerClick={() => handleMenuClick('prediction')}
             onRankClick={() => handleMenuClick('stats')}
+            onScheduleClick={() => handleMenuClick('schedule')}
           />
         )}
       </main>

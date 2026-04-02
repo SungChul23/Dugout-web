@@ -43,7 +43,7 @@ export const TEAMS: Team[] = [
     rank: 4, 
     winRate: 0.515, 
     gamesBehind: 9.0, 
-    color: '#131230', // Doosan Navy
+    color: '#1D3A8A', // Brighter Doosan Navy
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB004'
   },
   { 
@@ -54,7 +54,7 @@ export const TEAMS: Team[] = [
     rank: 5, 
     winRate: 0.493, 
     gamesBehind: 12.0, 
-    color: '#000000', // KT Black
+    color: '#FFFFFF', // KT White (changed from Black for visibility)
     ticketUrl: 'https://www.ticketlink.co.kr/sports/137/62'
   },
   { 
@@ -87,7 +87,7 @@ export const TEAMS: Team[] = [
     rank: 8, 
     winRate: 0.465, 
     gamesBehind: 15.5, 
-    color: '#041E42', // Lotte Navy
+    color: '#1E3A8A', // Brighter Lotte Navy
     ticketUrl: 'https://www.giantsclub.com/html/?pcode=339'
   },
   { 

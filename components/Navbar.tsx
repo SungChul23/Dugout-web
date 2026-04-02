@@ -32,7 +32,7 @@ const NAV_MENU = [
     items: [
       { label: '선수 성적 예측', view: 'prediction', desc: '2026 시즌 시뮬레이션', icon: '🤖' },
       { label: 'FA 시장 분석', view: 'faAnalysis', desc: '선수 가치 및 등급 평가', icon: '💰' },
-      { label: '골든글러브 예측', view: 'goldenglove', desc: '수상 확률 실시간 산출', icon: '🏆', disabled: true },
+      { label: '골든글러브 예측', view: 'goldenglove', desc: '수상 확률 실시간 산출', icon: '🏆' },
     ]
   },
   {

@@ -16,6 +16,8 @@ interface Game {
   time?: string; // HH:mm
   home?: string; // 팀 한글 풀네임
   away?: string; // 팀 한글 풀네임
+  homeScore?: number; // Added for score display
+  awayScore?: number; // Added for score display
   stadium?: string;
   status?: string; // SCHEDULED, LIVE, FINISHED, CANCELED
 }
@@ -39,25 +41,58 @@ const TEAM_MAP_TO_CONST: Record<string, string> = {
 };
 
 const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
-  const [selectedMonth, setSelectedMonth] = useState<number>(3);
-  const [selectedDay, setSelectedDay] = useState<number>(28); // 3월 개막일(28일)을 기본값으로 설정
+  // KST(한국 시간) 기준으로 오늘 날짜 계산
+  const kstString = new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" });
+  const kstDate = new Date(kstString);
+  const currentMonth = kstDate.getMonth() + 1;
+  const currentDay = kstDate.getDate();
+
+  const isKboSeason = currentMonth >= 3 && currentMonth <= 9;
+  const initialMonth = isKboSeason ? currentMonth : 3;
+  const initialDay = isKboSeason ? currentDay : 28;
+
+  const [selectedMonth, setSelectedMonth] = useState<number>(initialMonth);
+  const [selectedDay, setSelectedDay] = useState<number>(initialDay);
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   
   const dayScrollRef = useRef<HTMLDivElement>(null);
+  const prevMonth = useRef<number>(initialMonth);
+  const hasScrolledInitially = useRef(false);
 
   useEffect(() => {
     fetchMonthlySchedule(selectedMonth);
     
-    // 월 변경 시 날짜 초기화 (3월은 28일 개막, 그 외는 1일)
-    if (selectedMonth === 3) {
-      setSelectedDay(28);
-    } else {
-      setSelectedDay(1);
+    if (prevMonth.current !== selectedMonth) {
+      // 사용자가 월을 변경했을 때만 날짜 초기화
+      if (selectedMonth === 3) {
+        setSelectedDay(28);
+      } else {
+        setSelectedDay(1);
+      }
+      if(dayScrollRef.current) {
+        dayScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+      }
+      prevMonth.current = selectedMonth;
+    } else if (!hasScrolledInitially.current) {
+      // 첫 로드 시 선택된 날짜로 스크롤
+      hasScrolledInitially.current = true;
+      setTimeout(() => {
+        if (dayScrollRef.current) {
+          const selectedButton = dayScrollRef.current.querySelector(`button[data-day="${initialDay}"]`) as HTMLButtonElement;
+          if (selectedButton) {
+            const containerWidth = dayScrollRef.current.clientWidth;
+            const buttonLeft = selectedButton.offsetLeft;
+            const buttonWidth = selectedButton.clientWidth;
+            dayScrollRef.current.scrollTo({
+              left: buttonLeft - (containerWidth / 2) + (buttonWidth / 2),
+              behavior: 'smooth'
+            });
+          }
+        }
+      }, 100);
     }
-
-    if(dayScrollRef.current) dayScrollRef.current.scrollLeft = 0;
-  }, [selectedMonth]);
+  }, [selectedMonth, initialDay]);
 
   // --- API FETCH FUNCTION ---
   const fetchMonthlySchedule = async (month: number) => {
@@ -193,6 +228,7 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
               return (
                 <button
                   key={day}
+                  data-day={day}
                   onClick={() => setSelectedDay(day)}
                   className={`
                     flex-shrink-0 flex flex-col items-center justify-center w-16 h-24 rounded-2xl border transition-all duration-300 group
@@ -252,6 +288,17 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
                   const homeInfo = getTeamInfo(homeName);
                   const awayInfo = getTeamInfo(awayName);
                   
+                  const isFinished = game.status === 'FINISHED';
+                  const isLive = game.status === 'LIVE';
+                  const hasScore = game.homeScore !== undefined && game.awayScore !== undefined;
+                  
+                  const homeWon = isFinished && hasScore && game.homeScore! > game.awayScore!;
+                  const awayWon = isFinished && hasScore && game.awayScore! > game.homeScore!;
+                  const isDraw = isFinished && hasScore && game.homeScore === game.awayScore;
+
+                  const homeLost = isFinished && hasScore && game.homeScore! < game.awayScore!;
+                  const awayLost = isFinished && hasScore && game.awayScore! < game.homeScore!;
+                  
                   return (
                     <div 
                       key={game.id}
@@ -287,44 +334,103 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
                             </div>
                             
                             {/* 상태 뱃지 확대 */}
-                            <div className={`text-sm font-bold px-3 py-1.5 rounded-lg border ${game.status === 'LIVE' ? 'text-red-500 border-red-500 animate-pulse' : 'text-slate-500 border-white/10 bg-white/5'}`}>
+                            <div className={`text-sm md:text-base font-black px-4 py-2 rounded-xl border-2 tracking-wider ${
+                              game.status === 'LIVE' 
+                                ? 'bg-red-600/20 text-red-500 border-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
+                                : game.status === 'FINISHED' 
+                                  ? 'bg-slate-800 text-slate-300 border-slate-700' 
+                                  : 'bg-transparent text-slate-400 border-slate-600/50'
+                            }`}>
                               {game.status === 'LIVE' ? 'LIVE' : game.status === 'FINISHED' ? '종료' : 'PREVIEW'}
                             </div>
                          </div>
 
                          {/* Matchup Content */}
-                         <div className="flex items-center justify-between gap-4">
+                         <div className="flex items-center justify-between gap-3 md:gap-4">
                             {/* Away */}
-                            <div className="flex flex-col items-center gap-4 flex-1">
-                               {/* 로고 박스 확대 (w-20 md:w-24) */}
+                            <div className={`flex flex-col items-center flex-1 relative ${awayLost ? 'opacity-40 grayscale' : ''}`}>
+                               {awayWon && (
+                                 <div className="absolute -top-3 -left-2 md:-left-4 bg-red-600 text-white text-[10px] md:text-xs font-black px-2 py-1 rounded-md transform -rotate-12 z-20 shadow-lg border border-red-400">
+                                   WIN
+                                 </div>
+                               )}
                                <div 
-                                 className="w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-3xl font-black text-white shadow-2xl border border-white/10 bg-[#12182b] transform group-hover:-translate-y-1 transition-transform duration-500"
-                                 style={{ borderBottomWidth: '6px', borderBottomColor: awayInfo.color }}
+                                 className="w-full aspect-square max-w-[110px] md:max-w-[130px] rounded-[2rem] flex flex-col items-center justify-center shadow-2xl border border-white/10 relative overflow-hidden transform group-hover:-translate-y-1 transition-all duration-500 bg-[#12182b]"
                                >
-                                 {awayInfo.code}
+                                 {/* Colored Glow Effect */}
+                                 <div 
+                                   className="absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40" 
+                                   style={{ background: `radial-gradient(circle at 50% 0%, ${awayInfo.color}, transparent 70%)` }}
+                                 ></div>
+                                 
+                                 {/* Bottom Color Bar */}
+                                 <div 
+                                   className="absolute bottom-0 left-0 right-0 h-2"
+                                   style={{ backgroundColor: awayInfo.color }}
+                                 ></div>
+
+                                 <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 px-2">
+                                   <span className="text-2xl md:text-3xl font-black text-white tracking-tight text-center break-keep leading-none">
+                                     {(awayName || '미정').split(' ')[0]}
+                                   </span>
+                                   {(awayName || '미정').split(' ').length > 1 && (
+                                     <span className="text-xs md:text-sm font-bold text-slate-400 text-center break-keep">
+                                       {(awayName || '미정').split(' ').slice(1).join(' ')}
+                                     </span>
+                                   )}
+                                 </div>
                                </div>
-                               {/* 팀명 확대 (text-lg md:text-xl) */}
-                               <span className="text-lg md:text-xl font-bold text-center leading-tight text-slate-200 break-keep min-h-[2.5em] flex items-center justify-center">
-                                 {awayName || '미정'}
-                               </span>
                             </div>
 
-                            <div className="flex flex-col items-center justify-center px-2">
-                               {/* VS 텍스트 확대 (text-4xl) */}
-                               <span className="text-4xl font-black text-slate-700 italic">VS</span>
+                            <div className="flex flex-col items-center justify-center px-1 md:px-2 min-w-[80px] md:min-w-[120px]">
+                               {(isFinished || isLive) && hasScore ? (
+                                 <div className="flex items-center gap-3 md:gap-6">
+                                   <span className={`font-mono text-5xl md:text-6xl font-black ${awayWon ? 'text-white' : awayLost ? 'text-slate-500' : 'text-white'}`}>
+                                     {game.awayScore}
+                                   </span>
+                                   <span className="text-xl md:text-2xl font-black text-slate-600 mb-1">:</span>
+                                   <span className={`font-mono text-5xl md:text-6xl font-black ${homeWon ? 'text-white' : homeLost ? 'text-slate-500' : 'text-white'}`}>
+                                     {game.homeScore}
+                                   </span>
+                                 </div>
+                               ) : (
+                                 <span className="text-3xl md:text-4xl font-black text-slate-700 italic">VS</span>
+                               )}
                             </div>
 
                             {/* Home */}
-                            <div className="flex flex-col items-center gap-4 flex-1">
+                            <div className={`flex flex-col items-center flex-1 relative ${homeLost ? 'opacity-40 grayscale' : ''}`}>
+                               {homeWon && (
+                                 <div className="absolute -top-3 -right-2 md:-right-4 bg-red-600 text-white text-[10px] md:text-xs font-black px-2 py-1 rounded-md transform rotate-12 z-20 shadow-lg border border-red-400">
+                                   WIN
+                                 </div>
+                               )}
                                <div 
-                                 className="w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center text-3xl font-black text-white shadow-2xl border border-white/10 bg-[#12182b] transform group-hover:-translate-y-1 transition-transform duration-500"
-                                 style={{ borderBottomWidth: '6px', borderBottomColor: homeInfo.color }}
+                                 className="w-full aspect-square max-w-[110px] md:max-w-[130px] rounded-[2rem] flex flex-col items-center justify-center shadow-2xl border border-white/10 relative overflow-hidden transform group-hover:-translate-y-1 transition-all duration-500 bg-[#12182b]"
                                >
-                                 {homeInfo.code}
+                                 {/* Colored Glow Effect */}
+                                 <div 
+                                   className="absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40" 
+                                   style={{ background: `radial-gradient(circle at 50% 0%, ${homeInfo.color}, transparent 70%)` }}
+                                 ></div>
+                                 
+                                 {/* Bottom Color Bar */}
+                                 <div 
+                                   className="absolute bottom-0 left-0 right-0 h-2"
+                                   style={{ backgroundColor: homeInfo.color }}
+                                 ></div>
+
+                                 <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 px-2">
+                                   <span className="text-2xl md:text-3xl font-black text-white tracking-tight text-center break-keep leading-none">
+                                     {(homeName || '미정').split(' ')[0]}
+                                   </span>
+                                   {(homeName || '미정').split(' ').length > 1 && (
+                                     <span className="text-xs md:text-sm font-bold text-slate-400 text-center break-keep">
+                                       {(homeName || '미정').split(' ').slice(1).join(' ')}
+                                     </span>
+                                   )}
+                                 </div>
                                </div>
-                               <span className="text-lg md:text-xl font-bold text-center leading-tight text-slate-200 break-keep min-h-[2.5em] flex items-center justify-center">
-                                 {homeName || '미정'}
-                               </span>
                             </div>
                          </div>
                       </div>
