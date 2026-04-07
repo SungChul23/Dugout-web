@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, ChevronLeft, Info, X, TrendingUp, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Markdown from 'react-markdown';
 import { TEAMS } from '../constants';
 import { api } from '../api';
 
@@ -58,7 +59,17 @@ const getFeatureLabel = (feature: string) => {
     'R_pos_ratio': '동일 포지션 내 득점 생산력',
     'G_pos_ratio': '동일 포지션 내 출장 경기 수', 
     'SO_inverse_ratio': '동일 포지션 내 삼진 억제력', 
-    'GDP_inverse_ratio': '동일 포지션 내 병살타 최소화 능력'
+    'GDP_inverse_ratio': '동일 포지션 내 병살타 최소화 능력',
+    'W_pct': '승리 창출 능력 (다승 능력)',
+    'QS_pct': '퀄리티스타트(QS) 달성률',
+    'ERA_pct': '평균자책점(ERA) 억제력',
+    'SO_pct': '탈삼진 능력',
+    'IP_num_pct': '리그 내 이닝 비중',
+    'IP_per_G': '경기당 이닝 소화력',
+    'WHIP_pct': '출루 허용(WHIP) 억제력',
+    'SV_pct': '세이브 달성률',
+    'HLD_pct': '홀드 달성률',
+    'WPCT_pct': '승률 달성 능력'
   };
   return map[feature] || feature;
 };
@@ -364,9 +375,15 @@ const GoldenGlove: React.FC<GoldenGloveProps> = ({ onCancel, user }) => {
                                 <Info className={`text-yellow-400 ${isTopRank ? 'w-6 h-6' : 'w-5 h-5'}`} />
                                 <span className={`font-bold text-yellow-400 uppercase tracking-widest ${isTopRank ? 'text-base' : 'text-sm'}`}>AI Report</span>
                               </div>
-                              <p className={`text-slate-200 leading-relaxed font-light word-keep ${isTopRank ? 'text-lg' : 'text-base'}`}>
-                                {player.aiExplanation}
-                              </p>
+                              <div className={`text-slate-200 leading-relaxed font-light word-keep ${isTopRank ? 'text-lg' : 'text-base'}`}>
+                                <Markdown
+                                  components={{
+                                    p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />
+                                  }}
+                                >
+                                  {player.aiExplanation}
+                                </Markdown>
+                              </div>
                             </div>
                           )}
                         </div>
