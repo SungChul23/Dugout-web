@@ -24,8 +24,8 @@ const Footer: React.FC = () => {
           <div className="flex space-x-6 text-xs font-medium">
              {/* Legal links removed as requested */}
           </div>
-          <p className="text-[10px] text-slate-700 uppercase tracking-widest font-mono">
-            &copy; 2026 DUGOUT CORP.
+          <p className="text-xs md:text-sm text-slate-500 tracking-wide font-medium text-center md:text-right">
+            Data Source: KBO <span className="mx-2 text-slate-700">|</span> 본 서비스는 비영리 목적으로 운영됩니다. <span className="mx-2 text-slate-700">|</span> &copy; 2026 DUGOUT
           </p>
         </div>
       </div>

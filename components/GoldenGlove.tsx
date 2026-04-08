@@ -137,18 +137,31 @@ const GoldenGlove: React.FC<GoldenGloveProps> = ({ onCancel, user }) => {
         {/* Top Navigation / Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 border-b border-white/5 pb-8 relative z-10">
           <div className="max-w-4xl">
-            <div className="inline-flex items-center space-x-2 bg-yellow-400/10 border border-yellow-400/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
-               <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-               <span className="text-xs md:text-sm font-mono text-yellow-400 font-bold uppercase tracking-widest">
-                 AI Powered Simulation
-               </span>
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <div className="inline-flex items-center space-x-2 bg-yellow-400/10 border border-yellow-400/20 rounded-full px-4 py-1.5 backdrop-blur-sm">
+                 <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                 <span className="text-xs md:text-sm font-mono text-yellow-400 font-bold uppercase tracking-widest">
+                   AI Powered Simulation
+                 </span>
+              </div>
             </div>
             <h2 className="text-5xl md:text-7xl font-black text-white tracking-tight mb-4">
               GOLDEN GLOVE <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">PREDICTION</span>
             </h2>
-            <p className="text-slate-400 text-xl md:text-2xl font-light">
+            <p className="text-slate-400 text-xl md:text-2xl font-light mb-6">
               2026 시즌 종료 시점의 성적을 AI가 미리 예측하여, 각 포지션별 가장 유력한 골든글러브 수상 후보를 선정합니다.
             </p>
+            {leaderboardData?.baseDate && (
+              <div className="inline-flex items-center space-x-3 bg-[#0a0f1e]/80 border border-yellow-400/40 px-5 py-2.5 rounded-xl shadow-[0_0_20px_rgba(250,204,21,0.25)] backdrop-blur-md">
+                <div className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,1)]"></span>
+                </div>
+                <span className="text-sm md:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-400 to-cyan-300 tracking-wide drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]">
+                  기준일 : {leaderboardData.baseDate}
+                </span>
+              </div>
+            )}
           </div>
           
           <button 

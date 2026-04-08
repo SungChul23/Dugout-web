@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Info } from 'lucide-react';
 import Modal from './Modal';
 import { TEAMS } from '../constants';
 import { api } from '../api';
@@ -788,9 +789,15 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
             <h2 className="text-5xl md:text-7xl font-black text-white tracking-tight mb-4">
               FUTURE <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-glow to-pink-500">PERFORMANCE</span>
             </h2>
-            <p className="text-slate-400 text-xl md:text-2xl font-light">
+            <p className="text-slate-400 text-xl md:text-2xl font-light mb-5">
               2026 시즌 종료 시점의 성적을 AI가 미리 예측합니다.
             </p>
+            <div className="inline-flex items-start md:items-center space-x-3 bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-3 backdrop-blur-md shadow-lg">
+              <Info className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5 md:mt-0" />
+              <span className="text-sm md:text-base font-medium text-slate-300 tracking-wide word-keep leading-relaxed">
+                정교한 분석을 위해 충분한 데이터가 축적되지 않은 신인 및 신규 외국인 선수는 현재 예측 서비스에서 제공되지 않는 점 양해 부탁드립니다.
+              </span>
+            </div>
           </div>
           
           <button 
