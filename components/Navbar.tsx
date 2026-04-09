@@ -21,27 +21,27 @@ const NAV_MENU = [
     title: 'Game Data Center',
     themeColor: 'cyan', // text-cyan-400
     items: [
-      { label: '경기 일정 & 라인업', view: 'schedule', desc: '전 구단 경기 일정 확인', icon: '📅' },
-      { label: 'KBO 기록/순위', view: 'stats', desc: '팀/선수 정밀 분석', icon: '📊' },
-      { label: '실시간 뉴스', view: 'news', desc: '구단별 속보 큐레이션', icon: '📰' },
+      { label: '경기 일정 & 라인업', view: 'schedule', desc: '전 구단 경기 일정 확인', icon: '📅', disabled: false },
+      { label: 'KBO 기록/순위', view: 'stats', desc: '팀/선수 정밀 분석', icon: '📊', disabled: false },
+      { label: '실시간 뉴스', view: 'news', desc: '구단별 속보 큐레이션', icon: '📰', disabled: false },
     ]
   },
   {
     title: 'AI Predictive Insight',
     themeColor: 'violet', // text-violet-400
     items: [
-      { label: '선수 성적 예측', view: 'prediction', desc: '2026 시즌 시뮬레이션', icon: '🤖' },
-      { label: 'FA 시장 분석', view: 'faAnalysis', desc: '선수 가치 및 등급 평가', icon: '💰' },
-      { label: '골든글러브 예측', view: 'goldenglove', desc: '수상 확률 실시간 산출', icon: '🏆' },
+      { label: '선수 성적 예측', view: 'prediction', desc: '2026 시즌 시뮬레이션', icon: '🤖', disabled: false },
+      { label: 'FA 시장 분석', view: 'faAnalysis', desc: '선수 가치 및 등급 평가', icon: '💰', disabled: false },
+      { label: '골든글러브 예측', view: 'goldenglove', desc: '수상 확률 실시간 산출', icon: '🏆', disabled: false },
     ]
   },
   {
     title: 'Fan Experience',
     themeColor: 'pink', // text-pink-500
     items: [
-      { label: '티켓 예매', view: 'tickets', desc: '구단별 예매처 바로가기', icon: '🎟️' },
-      { label: '나의 팀 찾기', view: 'findTeam', desc: 'AI 취향 분석 및 추천', icon: '🔍' },
-      { label: '야구 가이드', view: 'guide', desc: '용어 및 규칙 백과', icon: '📖' },
+      { label: '티켓 예매', view: 'tickets', desc: '구단별 예매처 바로가기', icon: '🎟️', disabled: false },
+      { label: '나의 팀 찾기', view: 'findTeam', desc: 'AI 취향 분석 및 추천', icon: '🔍', disabled: false },
+      { label: '야구 가이드', view: 'guide', desc: '용어 및 규칙 백과', icon: '📖', disabled: false },
     ]
   }
 ];
@@ -58,6 +58,7 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Modal State
   const [modalState, setModalState] = useState<{
@@ -84,6 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({
       onConfirm: () => {
         onLogoutClick?.();
         closeModal();
+        setIsMobileMenuOpen(false);
       },
     });
   };
@@ -96,22 +98,34 @@ const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Prevent scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+      document.body.style.overflowX = 'hidden';
+    }
+  }, [isMobileMenuOpen]);
+
   // Helper to get Tailwind classes based on color name
   const getColorClasses = (color: string) => {
     switch (color) {
-      case 'cyan': return { text: 'group-hover:text-cyan-400', border: 'border-cyan-400', bg: 'hover:bg-cyan-400/10', glow: 'shadow-cyan-400/20' };
-      case 'violet': return { text: 'group-hover:text-violet-400', border: 'border-violet-400', bg: 'hover:bg-violet-400/10', glow: 'shadow-violet-400/20' };
-      case 'pink': return { text: 'group-hover:text-pink-500', border: 'border-pink-500', bg: 'hover:bg-pink-500/10', glow: 'shadow-pink-500/20' };
-      default: return { text: 'group-hover:text-white', border: 'border-white', bg: 'hover:bg-white/10', glow: 'shadow-white/20' };
+      case 'cyan': return { text: 'group-hover:text-cyan-400', border: 'border-cyan-400', bg: 'hover:bg-cyan-400/10', glow: 'shadow-cyan-400/20', accent: 'bg-cyan-400' };
+      case 'violet': return { text: 'group-hover:text-violet-400', border: 'border-violet-400', bg: 'hover:bg-violet-400/10', glow: 'shadow-violet-400/20', accent: 'bg-violet-400' };
+      case 'pink': return { text: 'group-hover:text-pink-500', border: 'border-pink-500', bg: 'hover:bg-pink-500/10', glow: 'shadow-pink-500/20', accent: 'bg-pink-500' };
+      default: return { text: 'group-hover:text-white', border: 'border-white', bg: 'hover:bg-white/10', glow: 'shadow-white/20', accent: 'bg-white' };
     }
   };
 
   return (
     <nav 
-      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 border-b ${
-        scrolled 
-          ? 'bg-[#020617]/80 backdrop-blur-xl border-white/5 py-2 shadow-2xl' 
-          : 'bg-transparent border-transparent py-6'
+      className={`fixed top-0 left-0 right-0 transition-all duration-500 border-b ${
+        isMobileMenuOpen ? 'z-[200] h-screen bg-[#020617] overflow-hidden' : 'z-[100]'
+      } ${
+        scrolled && !isMobileMenuOpen
+          ? 'bg-[#020617]/95 backdrop-blur-xl border-white/5 py-2 shadow-2xl' 
+          : !isMobileMenuOpen ? 'bg-transparent border-transparent py-6' : 'border-white/5 py-2'
       }`}
       onMouseLeave={() => setHoveredCategory(null)}
     >
@@ -119,8 +133,11 @@ const Navbar: React.FC<NavbarProps> = ({
         
         {/* 1. Logo Section */}
         <div 
-          onClick={onLogoClick}
-          className="flex items-center space-x-3 cursor-pointer group flex-shrink-0 relative z-50"
+          onClick={() => {
+            onLogoClick?.();
+            setIsMobileMenuOpen(false);
+          }}
+          className="flex items-center space-x-3 cursor-pointer group flex-shrink-0 relative z-[110]"
         >
           <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-brand-primary to-brand-accent rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-lg shadow-cyan-500/20">
             <span className="font-black text-white text-lg md:text-xl italic">D</span>
@@ -168,7 +185,6 @@ const Navbar: React.FC<NavbarProps> = ({
                    </button>
 
                    {/* Dropdown Panel */}
-                   {/* Animation: Slide down slightly + Fade In */}
                    <div 
                      className={`
                        absolute top-full left-1/2 -translate-x-1/2 mt-4 w-80 
@@ -180,12 +196,10 @@ const Navbar: React.FC<NavbarProps> = ({
                      `}
                      onMouseLeave={() => setHoveredCategory(null)}
                    >
-                     {/* Glassmorphism Card */}
                      <div className={`
                         bg-[#0f172a]/95 backdrop-blur-2xl rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)]
                         border border-white/10 border-t-4 ${colors.border}
                      `}>
-                        {/* Decorative Gradient Background inside */}
                         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
 
                         <div className="relative p-2 flex flex-col gap-1">
@@ -206,13 +220,11 @@ const Navbar: React.FC<NavbarProps> = ({
                                 }
                               `}
                             >
-                              {/* Hover Indicator Bar */}
                               <div className={`
                                 absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 rounded-r-full transition-all duration-300
-                                group-hover/item:h-2/3 ${item.disabled ? '' : `bg-${category.themeColor === 'pink' ? 'pink-500' : category.themeColor === 'violet' ? 'violet-400' : 'cyan-400'}`}
+                                group-hover/item:h-2/3 ${item.disabled ? '' : colors.accent}
                               `}></div>
 
-                              {/* Icon Box */}
                               <div className={`
                                 w-10 h-10 rounded-lg flex items-center justify-center text-lg bg-[#020617] border border-white/5 shadow-inner
                                 group-hover/item:scale-110 transition-transform duration-300
@@ -245,87 +257,145 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* 3. Right Actions (User Profile) */}
-        <div className="flex items-center justify-end flex-shrink-0 relative z-50 gap-4">
+        <div className="flex items-center justify-end flex-shrink-0 relative z-[110] gap-2 md:gap-4">
            {/* Notice Bell Icon */}
            <button 
-             onClick={onNoticeClick}
+             onClick={() => {
+               onNoticeClick?.();
+               setIsMobileMenuOpen(false);
+             }}
              className="relative p-2 text-slate-400 hover:text-white transition-colors group"
              aria-label="공지사항"
            >
              <svg className="w-6 h-6 group-hover:animate-swing origin-top" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
              </svg>
-             {/* Notification Dot */}
              <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
            </button>
 
           {user ? (
-            /* Logged In View */
-            <div className="flex items-center gap-6 animate-fade-in-up pl-6 border-l border-white/10 h-12">
+            <div className="flex items-center gap-2 md:gap-6 animate-fade-in-up md:pl-6 md:border-l md:border-white/10 h-12">
                <div 
-                 onClick={onProfileClick} 
-                 className="flex items-center gap-4 group cursor-pointer"
+                 onClick={() => {
+                   onProfileClick?.();
+                   setIsMobileMenuOpen(false);
+                 }} 
+                 className="flex items-center gap-3 md:gap-4 group cursor-pointer"
                >
-                  <div className="text-right hidden md:block">
-                    <span className="block text-white text-lg font-black group-hover:text-brand-accent transition-colors leading-none mb-1.5">
+                  <div className="text-right hidden xl:block">
+                    <span className="block text-white text-base md:text-lg font-black group-hover:text-brand-accent transition-colors leading-none mb-1 md:mb-1.5">
                       {user.nickname}
                     </span>
                     <div className="flex flex-col items-end">
                       {user.favoriteTeam && (
-                        <span className="text-[10px] text-brand-dark font-black uppercase tracking-wider bg-brand-accent px-1.5 py-0.5 rounded leading-none mb-1">
+                        <span className="text-xs text-brand-dark font-black uppercase tracking-wider bg-brand-accent px-2 py-0.5 rounded leading-none mb-1">
                           {user.favoriteTeam}
-                        </span>
-                      )}
-                      {user.teamSlogan && (
-                        <span className="text-xs text-slate-400 font-serif italic tracking-wide font-medium whitespace-nowrap">
-                          "{user.teamSlogan}"
                         </span>
                       )}
                     </div>
                   </div>
                   
-                  {/* Avatar */}
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-brand-accent via-brand-primary to-brand-glow p-[3px] shadow-[0_0_20px_rgba(6,182,212,0.4)] group-hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] transition-all relative overflow-hidden">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-brand-accent via-brand-primary to-brand-glow p-[2px] md:p-[3px] shadow-[0_0_15px_rgba(6,182,212,0.4)] group-hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] transition-all relative overflow-hidden">
                     <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center group-hover:bg-slate-800 transition-colors relative overflow-hidden">
-                      <span className="text-white font-black text-xl md:text-2xl relative z-10">
+                      <span className="text-white font-black text-lg md:text-2xl relative z-10">
                         {user.nickname.substring(0, 1).toUpperCase()}
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                     </div>
                   </div>
                </div>
                
                <button 
                 onClick={handleLogoutClick}
-                className="text-slate-500 hover:text-red-400 transition-colors p-3 hover:bg-red-500/10 rounded-full"
+                className="hidden xl:flex text-slate-500 hover:text-red-400 transition-colors p-2 md:p-3 hover:bg-red-500/10 rounded-full"
                 title="로그아웃"
                >
                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                </button>
             </div>
           ) : (
-            /* Logged Out View */
-            <div className="flex items-center space-x-3 animate-fade-in-up">
+            <div className="hidden xl:flex items-center space-x-2 md:space-x-3 animate-fade-in-up">
               <button 
                 onClick={onLoginClick} 
-                className="hidden md:block text-slate-300 hover:text-white font-bold text-base px-5 py-3 transition-colors"
+                className="text-slate-300 hover:text-white font-bold text-sm md:text-base px-3 md:px-5 py-2 md:py-3 transition-colors"
               >
                 로그인
               </button>
               <button 
                 onClick={onSignupClick}
-                className="bg-white text-brand-dark hover:bg-brand-accent hover:text-white font-black px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg text-sm md:text-base flex items-center gap-2"
+                className="bg-white text-brand-dark hover:bg-brand-accent hover:text-white font-black px-4 md:px-6 py-2 md:py-3 rounded-full transition-all transform hover:scale-105 shadow-lg text-xs md:text-base flex items-center gap-2"
               >
                 <span>회원가입</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
               </button>
             </div>
           )}
           
-          {/* Mobile Menu Icon (Expanded touch target) */}
-          <button className="xl:hidden p-3 ml-2 text-slate-300 hover:text-white">
-             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          {/* Mobile Menu Toggle */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="xl:hidden p-2 ml-1 text-slate-300 hover:text-white transition-colors relative z-[110]"
+          >
+             {isMobileMenuOpen ? (
+               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+             ) : (
+               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+             )}
           </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div className={`
+        absolute inset-0 bg-[#020617] transition-all duration-500 xl:hidden
+        ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}
+      `}>
+        <div className="h-full w-full overflow-y-auto pt-24 pb-12 px-6 flex flex-col justify-center gap-10">
+          {/* Mobile Auth Actions - High Visibility */}
+          {!user ? (
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => { onLoginClick?.(); setIsMobileMenuOpen(false); }}
+                className="w-full py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3"
+              >
+                <svg className="w-6 h-6 text-brand-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                로그인
+              </button>
+              <button 
+                onClick={() => { onSignupClick?.(); setIsMobileMenuOpen(false); }}
+                className="w-full py-5 rounded-2xl bg-gradient-to-r from-brand-primary to-brand-accent text-white font-black text-xl shadow-xl shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                회원가입
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 p-6 rounded-3xl bg-white/5 border border-white/10">
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-accent to-brand-primary flex items-center justify-center text-white font-black text-2xl shadow-lg">
+                  {user.nickname.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-white text-xl font-black">{user.nickname}</p>
+                  <p className="text-sm text-brand-accent font-medium">{user.favoriteTeam || '응원팀을 설정해보세요'}</p>
+                </div>
+              </div>
+              <div className="h-[1px] bg-white/5 w-full my-2"></div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => { onProfileClick?.(); setIsMobileMenuOpen(false); }}
+                  className="flex-1 py-3 rounded-xl bg-white/5 text-white font-bold text-sm border border-white/10"
+                >
+                  마이페이지
+                </button>
+                <button 
+                  onClick={handleLogoutClick}
+                  className="flex-1 py-3 rounded-xl bg-red-500/10 text-red-400 font-bold text-sm border border-red-500/20"
+                >
+                  로그아웃
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

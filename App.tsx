@@ -28,7 +28,7 @@ interface User {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction' | 'faAnalysis'>('home');
+  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction' | 'faAnalysis' | 'goldenglove'>('home');
   const [user, setUser] = useState<User | null>(null);
   const [showNotice, setShowNotice] = useState(false);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
@@ -179,8 +179,8 @@ function App() {
               </p>
             </div>
 
-            {/* 3D Ring Scaling: Mobile 0.55, Desktop 1.0 */}
-            <div className="w-full relative z-10 mb-8 md:mb-16 scale-[0.55] md:scale-100 origin-center -mt-12 md:mt-0">
+            {/* Responsive AnalysisRing */}
+            <div className="w-full relative z-10 mb-8 md:mb-16 origin-center -mt-12 md:mt-0">
               <AnalysisRing />
             </div>
 

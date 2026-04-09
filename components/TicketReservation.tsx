@@ -101,7 +101,7 @@ const TicketReservation: React.FC<TicketReservationProps> = ({ onCancel }) => {
             onClick={onCancel}
             className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors group px-6 py-4 rounded-2xl hover:bg-white/5 bg-[#0a0f1e] border border-white/10"
           >
-            <span className="text-base font-bold uppercase tracking-widest group-hover:mr-2 transition-all">Back to Home</span>
+            <span className="text-base font-bold uppercase tracking-widest group-hover:mr-2 transition-all">메인으로</span>
             <div className="w-12 h-12 rounded-full border-2 border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/30">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />

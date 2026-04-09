@@ -176,7 +176,7 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
             onClick={onCancel}
             className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors border border-white/10 px-8 py-4 rounded-2xl hover:bg-white/5 bg-[#0a0f1e]"
           >
-            <span className="text-base font-bold">메인으로</span>
+          <span className="text-base font-bold uppercase tracking-widest group-hover:mr-2 transition-all">메인으로</span>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>

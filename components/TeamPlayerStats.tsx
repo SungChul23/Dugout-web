@@ -244,6 +244,11 @@ interface LeaderboardData {
   ranks: RankItem[];
 }
 
+const BATTER_METRICS_BASIC = ['avg', 'hr', 'rbi', 'runs', 'sb', 'ops'];
+const BATTER_METRICS_ADVANCED = ['ops', 'risp', 'woba', 'wrcPlus', 'war', 'babip'];
+const PITCHER_METRICS_BASIC = ['era', 'wins', 'so', 'sv', 'hld', 'whip'];
+const PITCHER_METRICS_ADVANCED = ['whip', 'fip', 'k9', 'bb9', 'war', 'avg'];
+
 const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => {
   const [viewMode, setViewMode] = useState<'ranking' | 'records' | 'players'>('ranking');
   const [activeTab, setActiveTab] = useState<'batter' | 'pitcher'>('batter');
@@ -363,7 +368,6 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
     if (isAdvanced) {
       // Return Advanced Metrics
       switch (activeTab) {
-        case 'team': return TEAM_METRICS_ADVANCED;
         case 'batter': return BATTER_METRICS_ADVANCED;
         case 'pitcher': return PITCHER_METRICS_ADVANCED;
         default: return [];
@@ -371,7 +375,6 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
     } else {
       // Return Basic Metrics
       switch (activeTab) {
-        case 'team': return TEAM_METRICS_BASIC;
         case 'batter': return BATTER_METRICS_BASIC;
         case 'pitcher': return PITCHER_METRICS_BASIC;
         default: return [];
@@ -732,8 +735,9 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                         itemStyle={{ color: '#ffffff', padding: '2px 0', fontWeight: 'bold' }}
                         labelStyle={{ color: '#94a3b8', marginBottom: '0.5rem', fontWeight: 'bold' }}
                         formatter={(value: number, name: string) => [`${value}위`, getKoreanTeamName(name)]}
-                        labelFormatter={(label) => `${label} 순위`}
+                        labelFormatter={(label) => `날짜 ${label} (순위)`}
                         cursor={{ stroke: '#ffffff', strokeWidth: 1, strokeDasharray: '5 5', opacity: 0.5 }}
+                        itemSorter={(item) => item.value as number}
                       />
                       {/* 범례 글씨 대비 최적화 */}
                       <Legend 

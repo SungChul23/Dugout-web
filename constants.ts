@@ -43,7 +43,7 @@ export const TEAMS: Team[] = [
     rank: 4, 
     winRate: 0.515, 
     gamesBehind: 9.0, 
-    color: '#1D3A8A', // Brighter Doosan Navy
+    color: '#1A1748', // Brighter Doosan Navy
     ticketUrl: 'https://ticket.interpark.com/Contents/Sports/GoodsInfo?SportsCode=07001&TeamCode=PB004'
   },
   { 

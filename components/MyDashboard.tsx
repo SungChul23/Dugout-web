@@ -146,6 +146,7 @@ const MyDashboard: React.FC<MyDashboardProps> = ({ user, onFindTeamClick, onNews
     title: string;
     message: string;
     type: 'success' | 'confirm' | 'error';
+    confirmText?: string;
     onConfirm?: () => void;
   }>({
     isOpen: false,

@@ -388,7 +388,7 @@ const GuidePage: React.FC<GuidePageProps> = ({ onCancel }) => {
             </p>
           </div>
           <button onClick={onCancel} className="hidden lg:flex items-center gap-3 text-slate-400 hover:text-white transition-all border border-white/10 px-8 py-4 rounded-2xl hover:bg-white/5 group">
-             <span className="text-sm font-black tracking-widest">CLOSE</span>
+             <span className="text-sm font-black tracking-widest">메인으로</span>
              <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>

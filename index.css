@@ -1,21 +1,39 @@
+html {
+  font-size: 16px; /* Default base size */
+}
+
 @media (min-width: 1024px) {
   html {
-    font-size: 14px; /* Desktop: Scale down to 87.5% (simulates ~85-90% zoom) */
+    font-size: 14px; /* Desktop: Scale down slightly to fit more content */
   }
 }
 
 @media (min-width: 1536px) {
   html {
-    font-size: 16px; /* Large screens: Restore to 100% or keep scaled if preferred */
+    font-size: 16px; /* Large screens: Restore to standard size */
   }
 }
 
 body {
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden; /* Prevent horizontal scroll PROJECT-WIDE */
   background-color: #020617;
   color: white;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  position: relative;
+}
+
+/* Ensure all images and videos are responsive */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fix for potential overflow in flex/grid containers */
+* {
+  min-width: 0;
+  min-height: 0;
 }
 
 @keyframes marquee {

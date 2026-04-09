@@ -812,7 +812,7 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
         {/* AI Notice Box */}
         <div className="w-full max-w-5xl mx-auto mb-16 relative group">
            <div className="absolute -inset-1 bg-gradient-to-r from-brand-glow/20 to-transparent blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-           <div className="relative bg-[#0f172a]/80 backdrop-blur-xl border border-brand-glow/20 rounded-[2rem] p-10 text-left shadow-2xl flex flex-col md:flex-row gap-8 items-start">
+           <div className="relative bg-[#1e293b]/90 backdrop-blur-xl border border-brand-glow/20 rounded-[2rem] p-10 text-left shadow-2xl flex flex-col md:flex-row gap-8 items-start">
               <div className="flex-shrink-0 md:w-48">
                  <div className="inline-block">
                      <div className="w-12 h-1 bg-brand-glow rounded-full mb-2"></div>
@@ -1068,46 +1068,49 @@ const PlayerPrediction: React.FC<PlayerPredictionProps> = ({ onCancel, user }) =
 
                   {/* 3. Feedback Report */}
                   <div 
-                    className="flex-1 p-10 md:p-14 rounded-[3rem] relative overflow-hidden shadow-2xl"
+                    className="flex-1 p-10 md:p-14 rounded-[3rem] relative overflow-hidden shadow-2xl bg-slate-50"
                     style={{ 
-                      border: `1px solid ${activeColor}44`,
-                      background: `linear-gradient(145deg, ${activeColor}05 0%, #0f172a 100%)`,
-                      boxShadow: `0 0 40px -10px ${activeColor}22`
+                      border: `1px solid ${activeColor}33`,
+                      boxShadow: `0 20px 50px -10px ${activeColor}40`
                     }}
                   >
-                    {/* Inner Neon Gradient */}
+                    {/* Inner Gradient */}
                     <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at top right, ${activeColor}10 0%, transparent 60%)` }}></div>
-
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-white/5 to-transparent rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-50"></div>
                     
                     <div className="relative z-10">
-                      <div className="mb-10 flex items-center justify-between border-b border-white/5 pb-8">
+                      <div className="mb-10 flex items-center justify-between border-b border-slate-200 pb-8">
                         <div>
                           <h4 
-                            className="text-4xl font-black text-white tracking-tight mb-2 uppercase italic"
-                            style={{ textShadow: `0 0 30px ${activeColor}66` }}
+                            className="text-4xl font-black tracking-tight mb-2 uppercase italic text-slate-900"
                           >
-                            DUGOUT <span style={{ color: activeColor, textShadow: `0 0 20px ${activeColor}` }}>REPORT</span>
+                            DUGOUT <span style={{ color: isLightTeam ? '#0f172a' : activeColor }}>REPORT</span>
                           </h4>
                           <span className="text-xs text-slate-500 font-bold uppercase tracking-[0.3em] pl-1">Advanced AI Analysis</span>
                         </div>
                       </div>
                       
                       <div className="relative pl-0 md:pl-4">
-                         <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-white/10 to-transparent hidden md:block" style={{ backgroundColor: `${activeColor}44` }}></div>
+                         <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-slate-300 to-transparent hidden md:block" style={{ backgroundColor: `${activeColor}44` }}></div>
                          
                          <div className="md:pl-10">
-                           {/* Font size adjusted to text-xl as requested */}
-                           <div className="text-slate-200 leading-relaxed font-medium text-xl tracking-wide font-serif text-justify">
+                           <div className="text-slate-700 leading-relaxed font-medium text-xl tracking-wide font-serif text-justify">
                              <ReactMarkdown
                                components={{
-                                 h1: ({node, ...props}) => <h1 className="text-3xl font-black mb-6 mt-8 pb-2 border-b border-white/10" style={{ color: activeColor }} {...props} />,
-                                 h2: ({node, ...props}) => <h2 className="text-2xl font-bold mb-4 mt-8" style={{ color: activeColor }} {...props} />,
-                                 h3: ({node, ...props}) => <h3 className="text-xl font-bold mb-3 mt-6 text-white" {...props} />,
-                                 strong: ({node, ...props}) => <span className="font-black" style={{ color: activeColor }} {...props} />,
+                                 h1: ({node, ...props}) => <h1 className="text-3xl font-black mb-6 mt-8 pb-2 border-b border-slate-200" style={{ color: isLightTeam ? '#0f172a' : activeColor }} {...props} />,
+                                 h2: ({node, ...props}) => <h2 className="text-2xl font-bold mb-4 mt-8" style={{ color: isLightTeam ? '#0f172a' : activeColor }} {...props} />,
+                                 h3: ({node, ...props}) => <h3 className="text-xl font-bold mb-3 mt-6 text-slate-800" {...props} />,
+                                 strong: ({node, ...props}) => (
+                                   <span 
+                                     className="font-black px-1.5 py-0.5 rounded-md mx-0.5" 
+                                     style={{ 
+                                       color: isLightTeam ? '#0f172a' : activeColor,
+                                       backgroundColor: isLightTeam ? '#0f172a15' : `${activeColor}15`
+                                     }} 
+                                     {...props} 
+                                   />
+                                 ),
                                  p: ({node, ...props}) => <p className="mb-6 last:mb-0 leading-loose" style={{ fontFamily: '"Noto Serif KR", serif' }} {...props} />,
-                                 li: ({node, ...props}) => <li className="mb-2 ml-4 list-disc marker:text-slate-500" {...props} />
+                                 li: ({node, ...props}) => <li className="mb-2 ml-4 list-disc marker:text-slate-400" {...props} />
                                }}
                              >
                                {cleanReportText(prediction.aiFeedback)}
