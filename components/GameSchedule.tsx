@@ -290,6 +290,7 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
                   
                   const isFinished = game.status === 'FINISHED';
                   const isLive = game.status === 'LIVE';
+                  const isCanceled = game.status === 'CANCELED';
                   const hasScore = game.homeScore !== undefined && game.awayScore !== undefined;
                   
                   const homeWon = isFinished && hasScore && game.homeScore! > game.awayScore!;
@@ -339,9 +340,11 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
                                 ? 'bg-red-600/20 text-red-500 border-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
                                 : game.status === 'FINISHED' 
                                   ? 'bg-slate-800 text-slate-300 border-slate-700' 
-                                  : 'bg-transparent text-slate-400 border-slate-600/50'
+                                  : game.status === 'CANCELED'
+                                    ? 'bg-slate-800/50 text-slate-400 border-slate-700/50'
+                                    : 'bg-transparent text-slate-400 border-slate-600/50'
                             }`}>
-                              {game.status === 'LIVE' ? 'LIVE' : game.status === 'FINISHED' ? '종료' : 'PREVIEW'}
+                              {game.status === 'LIVE' ? 'LIVE' : game.status === 'FINISHED' ? '종료' : game.status === 'CANCELED' ? '취소' : 'PREVIEW'}
                             </div>
                          </div>
 
@@ -394,7 +397,9 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
                                    </span>
                                  </div>
                                ) : (
-                                 <span className="text-3xl md:text-4xl font-black text-slate-700 italic">VS</span>
+                                 <span className="text-3xl md:text-4xl font-black text-slate-700 italic">
+                                   {isCanceled ? '취소' : 'VS'}
+                                 </span>
                                )}
                             </div>
 
