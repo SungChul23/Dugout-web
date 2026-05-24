@@ -265,6 +265,12 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
   const [playerStats, setPlayerStats] = useState<LeaderboardData[]>([]);
   const [isPlayerStatsLoading, setIsPlayerStatsLoading] = useState(false);
 
+  // New state for Chart Month Selection
+  const [selectedChartMonth, setSelectedChartMonth] = useState<number>(() => {
+    const month = new Date().getMonth() + 1;
+    return month >= 4 && month <= 9 ? month : 4;
+  });
+
   useEffect(() => {
     const fetchRankings = async () => {
       try {
@@ -336,11 +342,20 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
     return allRankings.filter(r => r.rankingDate === latestDate).sort((a, b) => a.teamRank - b.teamRank);
   }, [allRankings]);
 
-  // 2. 차트용 일자별 순위 데이터
+  // 2. 차트용 일자별 순위 데이터 (선택된 달에 맞춰 필터링)
   const chartData = React.useMemo(() => {
     if (allRankings.length === 0) return [];
     
-    const grouped = allRankings.reduce((acc, curr) => {
+    const filteredRankings = allRankings.filter(curr => {
+      const dateStr = curr.rankingDate; // YYYY-MM-DD
+      if (!dateStr) return false;
+      const month = parseInt(dateStr.substring(5, 7), 10);
+      return month === selectedChartMonth;
+    });
+
+    if (filteredRankings.length === 0) return [];
+
+    const grouped = filteredRankings.reduce((acc, curr) => {
       const date = curr.rankingDate;
       if (!acc[date]) {
         const d = new Date(date);
@@ -355,7 +370,7 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
     }, {} as Record<string, any>);
 
     return Object.values(grouped).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [allRankings]);
+  }, [allRankings, selectedChartMonth]);
 
   const getTeamColor = (code: string | undefined) => {
     // KT 위즈 색상 예외 처리: 검은 배경에서 가시성 확보를 위해 강제로 흰색 반환
@@ -691,12 +706,39 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
               {/* SECTION 2: RANK TREND CHART */}
               {/* 차트 컨테이너 배경색을 완전한 검은색(#000000)으로 변경 */}
               <div className="w-full bg-[#000000] border border-white/10 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 flex flex-col">
-                <h3 className="text-base md:text-2xl font-black text-white mb-4 md:mb-6 flex items-center gap-2 md:gap-3">
-                  <span className="w-1.5 h-5 md:w-2 md:h-6 bg-cyan-500 rounded-full"></span>
-                  순위 변동 그래프 (일자별)
-                </h3>
-                <div className="w-full h-[550px] mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-4">
+                  <h3 className="text-base md:text-2xl font-black text-white flex items-center gap-2 md:gap-3">
+                    <span className="w-1.5 h-5 md:w-2 md:h-6 bg-cyan-500 rounded-full"></span>
+                    순위 변동 그래프
+                  </h3>
+                  
+                  {/* 월 선택 버튼 */}
+                  <div className="flex bg-white/5 rounded-xl p-1 gap-1 overflow-x-auto w-full md:w-auto no-scrollbar">
+                    {[4, 5, 6, 7, 8, 9].map(month => (
+                      <button
+                        key={month}
+                        onClick={() => setSelectedChartMonth(month)}
+                        className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+                          selectedChartMonth === month
+                            ? 'bg-cyan-500 text-[#000000] shadow-lg shadow-cyan-500/20'
+                            : 'text-slate-400 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {month}월
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-full h-[550px] mt-4 relative">
+                  {chartData.length === 0 ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#000000] rounded-2xl z-10">
+                      <span className="text-5xl mb-4">⚾️</span>
+                      <p className="text-xl md:text-2xl font-bold text-white mb-2">아직 경기를 치르지 않았습니다</p>
+                      <p className="text-slate-400 text-sm md:text-base">{selectedChartMonth}월 상세 순위 데이터가 존재하지 않습니다.</p>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                       <defs>
                         {/* neonGlow 필터 효과 조정: stdDeviation을 늘려 글로우를 더 퍼지게 하고, 중첩하여 밝기 극대화 */}
@@ -762,6 +804,7 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                       ))}
                     </LineChart>
                   </ResponsiveContainer>
+                  )}
                 </div>
                 <p className="text-xs text-slate-500 mt-4 text-center">
                   * 실제 경기 데이터를 기반으로 한 일자별 순위 변동입니다.

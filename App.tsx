@@ -19,6 +19,7 @@ import PlayerPrediction from './components/PlayerPrediction';
 import FaAnalysis from './components/FaAnalysis';
 import GoldenGlove from './components/GoldenGlove'; // New Import
 import NoticeModal from './components/NoticeModal';
+import ChatBot from './components/ChatBot';
 import { AnimatePresence } from 'framer-motion';
 
 interface User {
@@ -229,6 +230,7 @@ function App() {
       </main>
 
       <Footer />
+      <ChatBot />
     </div>
   );
 }
