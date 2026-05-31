@@ -738,19 +738,8 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                       <p className="text-slate-400 text-sm md:text-base">{selectedChartMonth}월 상세 순위 데이터가 존재하지 않습니다.</p>
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                      <defs>
-                        {/* neonGlow 필터 효과 조정: stdDeviation을 늘려 글로우를 더 퍼지게 하고, 중첩하여 밝기 극대화 */}
-                        <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
-                          <feGaussianBlur stdDeviation="6" result="blur" />
-                          <feMerge>
-                            <feMergeNode in="blur" />
-                            <feMergeNode in="blur" /> {/* 글로우 효과 중첩 */}
-                            <feMergeNode in="SourceGraphic" />
-                          </feMerge>
-                        </filter>
-                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} vertical={false} />
                       <XAxis 
                         dataKey="displayDate" 
@@ -797,9 +786,8 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                           dot={{ r: 8, strokeWidth: 2, stroke: '#000000', fill: getTeamColor(team.code) }} // dot 배경을 검은색으로 맞춰 대비 강화, fill 명시
                           activeDot={{ r: 12, strokeWidth: 0, fill: getTeamColor(team.code) }}
                           name={team.code} // Use code here, formatter handles display
-                          animationDuration={1500}
-                          animationEasing="ease-in-out"
-                          filter={team.code === 'KT' ? undefined : "url(#neonGlow)"}
+                          animationDuration={800}
+                          animationEasing="ease-out"
                         />
                       ))}
                     </LineChart>
@@ -981,38 +969,39 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, y: -30, filter: 'blur(8px)' }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10"
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5"
                 >
                   {isPlayerStatsLoading ? (
                     <div className="col-span-full text-center text-slate-400 py-20 text-xl font-bold">데이터를 불러오는 중입니다...</div>
                   ) : playerStats.length > 0 ? (
                     playerStats.map((metric, mIdx) => {
                       const themeColor = activeTab === 'batter' ? '#ec4899' : '#06b6d4';
-                      const shadowColor = activeTab === 'batter' ? 'rgba(236,72,153,0.3)' : 'rgba(6,182,212,0.3)';
+                      const shadowColor = activeTab === 'batter' ? 'rgba(236,72,153,0.15)' : 'rgba(6,182,212,0.15)';
                       
                       return (
                         <motion.div 
                           key={metric.metricKey} 
-                          initial={{ opacity: 0, x: -40 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.5, delay: mIdx * 0.15, ease: "easeOut" }}
-                          className="relative bg-[#02040a] rounded-[2.5rem] p-6 md:p-8 flex flex-col group overflow-hidden"
+                          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: mIdx * 0.05, ease: "easeOut" }}
+                          className="relative bg-[#0b101a] rounded-[1.5rem] p-5 flex flex-col group overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
                           style={{ 
-                            border: `1px solid ${themeColor}40`,
-                            boxShadow: `0 10px 40px -10px ${shadowColor}, inset 0 0 20px -10px ${shadowColor}`
+                            boxShadow: `0 4px 20px -10px ${shadowColor}`
                           }}
                         >
-                          {/* Neon Ambient Glow */}
-                          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40" style={{ backgroundColor: themeColor }}></div>
+                          {/* Ambient Glow */}
+                          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[40px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-30" style={{ backgroundColor: themeColor }}></div>
                           
-                          <h4 className="text-2xl md:text-3xl font-black mb-8 relative z-10 flex items-center gap-3 tracking-tight" style={{ color: themeColor, textShadow: `0 0 15px ${themeColor}80` }}>
-                            {metric.title}
-                          </h4>
+                          <div className="flex items-center justify-between mb-4 relative z-10">
+                            <h4 className="text-lg font-black tracking-tight flex items-center gap-2" style={{ color: themeColor }}>
+                              {metric.title}
+                            </h4>
+                          </div>
                           
-                          <div className="flex-1 relative z-10 flex flex-col">
+                          <div className="flex-1 relative z-10 flex flex-col gap-3">
                             {metric.ranks.length > 0 ? (
                               <>
-                                {/* 1st Place Hero Card */}
+                                {/* 1st Place Compact Card */}
                                 {metric.ranks.slice(0, 1).map((item, idx) => {
                                   const teamCode = getTeamCodeFromName(item.teamName);
                                   const teamColor = getTeamColor(teamCode);
@@ -1020,84 +1009,62 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                                   return (
                                     <div 
                                       key={`first-${idx}`} 
-                                      className="relative flex flex-col justify-between transition-all duration-300 p-6 md:p-8 rounded-[2rem] mb-4 backdrop-blur-md border-4"
+                                      className="relative flex justify-between items-center p-3.5 rounded-xl border-l-[3px] bg-white/[0.03]"
                                       style={{ 
                                         borderColor: teamColor,
-                                        backgroundColor: `${teamColor}10`,
-                                        boxShadow: `0 10px 30px -10px ${teamColor}60, inset 0 0 20px ${teamColor}20`
                                       }}
                                     >
-                                      {/* Top Row: Rank & Team */}
-                                      <div className="flex justify-between items-center mb-6">
-                                        <div className="flex items-center gap-3">
-                                          <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-300 to-yellow-600 border-2 border-yellow-200 shadow-[0_0_15px_rgba(250,204,21,0.6)]">
-                                            <span className="text-2xl">🥇</span>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: teamColor, boxShadow: `0 0 8px ${teamColor}` }}></span>
-                                            <span className="font-extrabold text-2xl tracking-wide text-white">
-                                              {item.teamName}
-                                            </span>
-                                          </div>
+                                      <div className="flex flex-col">
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                          <span className="text-xs">🥇</span>
+                                          <span className="text-[11px] font-bold text-slate-400">
+                                            {item.teamName}
+                                          </span>
                                         </div>
-                                      </div>
-                                      
-                                      {/* Bottom Row: Player & Value */}
-                                      <div className="flex items-end justify-between gap-4">
-                                        <p className="font-black text-white tracking-tight text-5xl leading-none drop-shadow-md">
+                                        <p className="font-black text-white text-xl md:text-2xl tracking-tight leading-none">
                                           {item.playerName}
                                         </p>
-                                        <div className="text-right flex flex-row items-baseline justify-end gap-1 whitespace-nowrap">
-                                          <span className="font-mono font-black tracking-tighter text-5xl leading-none text-white">
-                                            {item.displayValue}
-                                          </span>
-                                          {metric.unit && <span className="text-lg text-white/70 font-bold">{metric.unit}</span>}
-                                        </div>
+                                      </div>
+                                      <div className="text-right flex items-baseline gap-0.5">
+                                        <span className="font-mono font-black tracking-tighter text-2xl md:text-3xl text-white">
+                                          {item.displayValue}
+                                        </span>
+                                        {metric.unit && <span className="text-xs text-slate-500 font-bold">{metric.unit}</span>}
                                       </div>
                                     </div>
                                   );
                                 })}
 
-                                {/* 2nd to 5th Place List (including tied 1st places) */}
+                                {/* 2nd to 5th Place Dense List */}
                                 {metric.ranks.slice(1).length > 0 && (
-                                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem] p-2 md:p-4 flex-1 flex flex-col justify-center gap-1">
+                                  <div className="flex flex-col gap-0.5 px-1 pt-1">
                                     {metric.ranks.slice(1).map((item, idx) => {
-                                      const teamCode = getTeamCodeFromName(item.teamName);
-                                      const teamColor = getTeamColor(teamCode);
                                       const isTieFirst = item.rank === 1;
                                       
                                       return (
                                         <div 
                                           key={`rest-${idx}`} 
-                                          className={`flex items-center justify-between p-3 md:p-4 border-b last:border-0 rounded-xl transition-colors ${
-                                            isTieFirst 
-                                              ? 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20 shadow-[inset_0_0_15px_rgba(234,179,8,0.1)]' 
-                                              : 'border-white/[0.05] hover:bg-white/[0.06]'
-                                          }`}
+                                          className={`flex items-center justify-between py-1.5 border-b last:border-0 border-white/[0.05] ${isTieFirst ? 'bg-yellow-500/10 -mx-1 px-1 rounded' : ''}`}
                                         >
-                                          <div className="flex items-center gap-4 md:gap-5">
-                                            <span className={`font-mono font-black text-xl md:text-2xl w-6 text-center ${isTieFirst ? 'text-yellow-400' : 'text-slate-500'}`}>
+                                          <div className="flex items-center gap-2.5 md:gap-3">
+                                            <span className={`font-mono font-bold text-sm w-4 text-left ${isTieFirst ? 'text-yellow-400' : 'text-slate-500'}`}>
                                               {item.rank}
                                             </span>
-                                            <div>
-                                              <p className="font-black text-white text-2xl tracking-tight">
+                                            <div className="flex items-baseline gap-1.5">
+                                              <p className={`font-bold ${isTieFirst ? 'text-white' : 'text-slate-300'} text-sm md:text-[15px]`}>
                                                 {item.playerName}
                                               </p>
                                               {item.teamName && (
-                                                <div className="flex items-center gap-2 mt-1">
-                                                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: teamColor, boxShadow: `0 0 5px ${teamColor}` }}></span>
-                                                  <p className="font-extrabold text-lg text-white">
-                                                    {item.teamName}
-                                                  </p>
-                                                </div>
+                                                <span className="text-[10px] md:text-[11px] text-slate-500">
+                                                  {item.teamName}
+                                                </span>
                                               )}
                                             </div>
                                           </div>
-                                          <div className="text-right flex flex-row items-baseline justify-end gap-1 whitespace-nowrap">
-                                            <span className="font-mono font-black tracking-tighter text-3xl text-white">
+                                          <div className="flex items-baseline gap-0.5">
+                                            <span className={`font-mono font-bold ${isTieFirst ? 'text-white' : 'text-slate-400'} text-sm md:text-base`}>
                                               {item.displayValue}
                                             </span>
-                                            {metric.unit && <span className="text-base text-slate-400 font-bold">{metric.unit}</span>}
                                           </div>
                                         </div>
                                       );
@@ -1106,7 +1073,7 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                                 )}
                               </>
                             ) : (
-                              <div className="h-full flex items-center justify-center text-slate-500 text-lg py-10 font-light">
+                              <div className="h-full flex items-center justify-center text-slate-500 text-sm py-6 font-light">
                                 데이터가 없습니다.
                               </div>
                             )}

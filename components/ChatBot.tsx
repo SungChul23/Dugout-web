@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   id: string;
@@ -14,7 +16,7 @@ const LOCAL_STORAGE_HISTORY_KEY = 'dugout_chat_history';
 const WELCOME_MESSAGE: Message = {
   id: 'welcome',
   role: 'ai',
-  text: '안녕하세요! 더그아웃 AI입니다. KBO 성적, 순위, 경기 일정 등을 물어보세요 ⚾'
+  text: '안녕하세요! 더그아웃 AI입니다. KBO 성적, 일정, 그리고 AI 기반 골든글러브/FA 예측까지 야구의 모든 것을 물어보세요! ⚾'
 };
 
 const ChatBot: React.FC = () => {
@@ -222,26 +224,45 @@ const ChatBot: React.FC = () => {
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto overscroll-contain p-4 flex flex-col gap-3 min-h-0 no-scrollbar">
-              {messages.map((msg) => (
-                <div 
-                  key={msg.id}
-                  className={msg.role === 'user' ? 'flex justify-end w-full shrink-0' : 'flex justify-start w-full shrink-0'}
-                >
-                  <div 
-                    className={
-                      msg.role === 'user' 
-                        ? 'max-w-[80%] rounded-2xl rounded-br-sm px-5 py-3 text-[15px] md:text-[16px] leading-relaxed break-words bg-brand-accent text-[#020617]' 
-                        : 'max-w-[80%] rounded-2xl rounded-bl-sm px-5 py-3 text-[15px] md:text-[16px] leading-relaxed break-words bg-[#1e293b]/70 border border-white/5 text-slate-200'
-                    }
+              <AnimatePresence initial={false}>
+                {messages.map((msg) => (
+                  <motion.div 
+                    key={msg.id}
+                    layout
+                    initial={{ opacity: 0, y: 15, scale: 0.95, originX: msg.role === 'user' ? 1 : 0 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className={msg.role === 'user' ? 'flex justify-end w-full shrink-0' : 'flex justify-start w-full shrink-0'}
                   >
-                    {renderText(msg.text)}
-                  </div>
-                </div>
-              ))}
-              
-              {loading && (
-                <div className="flex justify-start w-full shrink-0">
-                  <div className="bg-[#1e293b]/70 border border-white/5 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                    <div 
+                      className={
+                        msg.role === 'user' 
+                          ? 'max-w-[80%] rounded-2xl rounded-br-sm px-5 py-3 text-[15px] md:text-[16px] leading-relaxed break-words bg-brand-accent text-[#020617]' 
+                          : 'max-w-[80%] rounded-2xl rounded-bl-sm px-5 py-3 text-[15px] md:text-[16px] leading-relaxed break-words bg-[#1e293b]/70 border border-white/5 text-slate-200'
+                      }
+                    >
+                      {msg.role === 'ai' ? (
+                        <div className="markdown-body overflow-x-auto">
+                          <Markdown remarkPlugins={[remarkGfm]}>{msg.text}</Markdown>
+                        </div>
+                      ) : (
+                        renderText(msg.text)
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+                
+                {loading && (
+                  <motion.div 
+                    key="loading-indicator"
+                    layout
+                    initial={{ opacity: 0, y: 15, scale: 0.95, originX: 0 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="flex justify-start w-full shrink-0"
+                  >
+                    <div className="bg-[#1e293b]/70 border border-white/5 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
                     <div className="flex items-center gap-1.5 opacity-60">
                       <motion.div 
                         animate={{ y: [0, -3, 0] }} 
@@ -260,8 +281,9 @@ const ChatBot: React.FC = () => {
                       />
                     </div>
                   </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div ref={messagesEndRef} />
             </div>
 
@@ -278,16 +300,31 @@ const ChatBot: React.FC = () => {
                   disabled={loading}
                   className="flex-1 bg-transparent text-white px-4 py-3 focus:outline-none placeholder-slate-500 disabled:opacity-50 text-[15px] md:text-[16px]"
                 />
-                <button
-                  onClick={handleSend}
-                  disabled={loading || !inputValue.trim()}
-                  className="px-4 py-2 text-brand-accent hover:text-cyan-300 disabled:opacity-30 disabled:hover:text-brand-accent transition-colors font-bold"
-                  aria-label="전송"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
-                </button>
+                <AnimatePresence>
+                  {inputValue.trim() && (
+                    <motion.button
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={handleSend}
+                      disabled={loading || !inputValue.trim()}
+                      className="px-4 py-2 text-brand-accent hover:text-cyan-300 disabled:opacity-30 transition-colors font-bold flex items-center justify-center"
+                      aria-label="전송"
+                    >
+                      <motion.svg 
+                        className="w-6 h-6" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        animate={{ x: [0, 4, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </motion.svg>
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </motion.div>
