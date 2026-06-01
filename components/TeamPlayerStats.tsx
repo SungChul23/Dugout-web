@@ -818,26 +818,9 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                       <span className="w-2 h-8 bg-cyan-400 rounded-full"></span>
                       팀별 주요 기록 TOP 5
                     </h2>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => scrollLeaderboard('left')}
-                        className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white transition-colors"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                      </button>
-                      <button 
-                        onClick={() => scrollLeaderboard('right')}
-                        className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white transition-colors"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                      </button>
-                    </div>
                   </div>
                   
-                  <div 
-                    ref={scrollContainerRef}
-                    className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x"
-                  >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                     {TOP_5_METRICS.map((metric, mIdx) => {
                       const sortedTeams = [...teamStats].sort((a, b) => {
                         const valA = Number(a[metric.dataKey as keyof TeamPerformanceResponseDto]);
@@ -849,64 +832,94 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                       const leader = sortedTeams[0];
                       const leaderInfo = TEAMS.find(t => t.name === leader.teamName || t.koreanName === leader.teamName) || TEAMS.find(t => t.id === leader.teamId.toString());
                       
-                      // Determine neon color based on metric
-                      let neonColor = '#22d3ee'; // Default blue (pitching)
+                      let themeColor = '#22d3ee'; // Default blue (pitching)
                       if (['avg', 'hr', 'hits', 'ops'].includes(metric.dataKey)) {
-                        neonColor = '#ec4899'; // Pink (batting)
+                        themeColor = '#ec4899'; // Pink (batting)
                       } else if (['sb', 'fpct'].includes(metric.dataKey)) {
-                        neonColor = '#10b981'; // Green (defense/baserunning)
+                        themeColor = '#10b981'; // Green (defense/baserunning)
                       }
 
-                      return (
-                        <div key={metric.dataKey} className="min-w-[300px] md:min-w-[350px] bg-[#02040a] border border-white/5 rounded-[2.5rem] p-8 flex flex-col snap-start relative overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-                          {/* Neon Border Effect */}
-                          <div className="absolute inset-0 border-2 border-transparent rounded-[2.5rem] group-hover:border-cyan-500/30 transition-colors"></div>
-                          
-                          {/* Title */}
-                          <h3 className="text-xl font-black text-white mb-6 flex items-center gap-3">
-                            <span className="w-1.5 h-6 rounded-full" style={{ backgroundColor: neonColor }}></span>
-                            {metric.title}
-                          </h3>
+                      const shadowColor = themeColor === '#ec4899' ? 'rgba(236,72,153,0.15)' : 
+                                          themeColor === '#10b981' ? 'rgba(16,185,129,0.15)' : 
+                                          'rgba(34,211,238,0.15)'; 
 
-                          {/* Leader (1st Place) */}
-                          <div className="flex flex-col items-center gap-2 bg-[#02040a] border-4 rounded-[2rem] p-6 mb-6 relative overflow-hidden" style={{ boxShadow: `0 10px 30px -10px ${leaderInfo?.color || neonColor}60, inset 0 0 20px ${leaderInfo?.color || neonColor}20`, borderColor: leaderInfo?.color || neonColor }}>
-                            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[40px] opacity-50" style={{ backgroundColor: leaderInfo?.color || neonColor }}></div>
-                            <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full blur-[40px] opacity-30" style={{ backgroundColor: '#fbbf24' }}></div>
-                            
-                            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-300 to-yellow-600 border-2 border-yellow-200 shadow-[0_0_20px_rgba(250,204,21,0.8)] z-10 mb-2">
-                              <span className="text-3xl">🥇</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 z-10">
-                              <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: leaderInfo?.color || '#ffffff', boxShadow: `0 0 8px ${leaderInfo?.color || '#ffffff'}` }}></span>
-                              <div className="text-2xl font-black text-white">{leaderInfo?.koreanName || leader.teamName}</div>
-                            </div>
-                            <div className="text-5xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500 z-10 drop-shadow-lg mt-1">
-                              {metric.format(leader[metric.dataKey as keyof TeamPerformanceResponseDto])}
-                            </div>
+                      return (
+                        <motion.div 
+                          key={metric.dataKey}
+                          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: mIdx * 0.05, ease: "easeOut" }}
+                          className="relative bg-[#0b101a] rounded-[1.5rem] p-5 flex flex-col group overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
+                          style={{ boxShadow: `0 4px 20px -10px ${shadowColor}` }}
+                        >
+                          {/* Ambient Glow */}
+                          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[40px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-30" style={{ backgroundColor: themeColor }}></div>
+                          
+                          <div className="flex items-center justify-between mb-4 relative z-10">
+                            <h4 className="text-lg font-black tracking-tight flex items-center gap-2" style={{ color: themeColor }}>
+                              {metric.title}
+                            </h4>
                           </div>
 
-                          {/* 2nd to 5th Place List */}
-                          <div className="flex flex-col gap-3">
-                            {sortedTeams.slice(1).map((team, idx) => {
-                              const teamInfo = TEAMS.find(t => t.name === team.teamName || t.koreanName === team.teamName) || TEAMS.find(t => t.id === team.teamId.toString());
-                              return (
-                                <div key={team.teamId} className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                                  <div className="flex items-center gap-4">
-                                    <span className="text-slate-500 font-bold w-6 text-center text-lg">{idx + 2}</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: teamInfo?.color || '#ffffff', boxShadow: `0 0 5px ${teamInfo?.color || '#ffffff'}` }}></span>
-                                      <span className="text-white font-bold text-lg">{teamInfo?.koreanName || team.teamName}</span>
-                                    </div>
-                                  </div>
-                                  <span className="font-mono text-2xl text-slate-200 font-black">
-                                    {metric.format(team[metric.dataKey as keyof TeamPerformanceResponseDto])}
+                          <div className="flex-1 relative z-10 flex flex-col gap-3">
+                            {/* 1st Place Compact Card */}
+                            <div 
+                              className="relative flex justify-between items-center p-3.5 rounded-xl border-l-[3px] bg-white/[0.03]"
+                              style={{ borderColor: leaderInfo?.color || themeColor }}
+                            >
+                              <div className="flex flex-col">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="text-xs">🥇</span>
+                                  <span className="text-[11px] font-bold text-slate-400">
+                                    1위
                                   </span>
                                 </div>
-                              );
-                            })}
+                                <div className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: leaderInfo?.color || themeColor, boxShadow: `0 0 5px ${leaderInfo?.color || themeColor}` }}></span>
+                                  <p className="font-black text-white text-xl md:text-2xl tracking-tight leading-none">
+                                    {leaderInfo?.koreanName || leader.teamName}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right flex items-baseline gap-0.5">
+                                <span className="font-mono font-black tracking-tighter text-2xl md:text-3xl text-white">
+                                  {metric.format(leader[metric.dataKey as keyof TeamPerformanceResponseDto])}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* 2nd to 5th Place Dense List */}
+                            <div className="flex flex-col gap-0.5 px-1 pt-1">
+                              {sortedTeams.slice(1).map((team, idx) => {
+                                const teamInfo = TEAMS.find(t => t.name === team.teamName || t.koreanName === team.teamName) || TEAMS.find(t => t.id === team.teamId.toString());
+                                
+                                return (
+                                  <div 
+                                    key={team.teamId} 
+                                    className="flex items-center justify-between py-1.5 border-b last:border-0 border-white/[0.05]"
+                                  >
+                                    <div className="flex items-center gap-2.5 md:gap-3">
+                                      <span className="font-mono font-bold text-sm w-4 text-left text-slate-500">
+                                        {idx + 2}
+                                      </span>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: teamInfo?.color || '#ffffff' }}></span>
+                                        <p className="font-bold text-slate-300 text-sm md:text-[15px]">
+                                          {teamInfo?.koreanName || team.teamName}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-baseline gap-0.5">
+                                      <span className="font-mono font-bold text-slate-400 text-sm md:text-base">
+                                        {metric.format(team[metric.dataKey as keyof TeamPerformanceResponseDto])}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -975,26 +988,54 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                     <div className="col-span-full text-center text-slate-400 py-20 text-xl font-bold">데이터를 불러오는 중입니다...</div>
                   ) : playerStats.length > 0 ? (
                     playerStats.map((metric, mIdx) => {
-                      const themeColor = activeTab === 'batter' ? '#ec4899' : '#06b6d4';
-                      const shadowColor = activeTab === 'batter' ? 'rgba(236,72,153,0.15)' : 'rgba(6,182,212,0.15)';
+                      const isDishonorable = 
+                        (activeTab === 'batter' && isAdvanced && (metric.title.includes('삼진') || metric.title.includes('(SO)') || metric.title === 'SO')) ||
+                        (activeTab === 'pitcher' && !isAdvanced && (metric.title.includes('볼넷 허용') || metric.title.includes('(BB)') || metric.title === 'BB' || metric.title.includes('실점') || metric.title.includes('(R)') || metric.title === 'R') && !metric.title.includes('자책점') && !metric.title.toUpperCase().includes('ERA')) ||
+                        (activeTab === 'pitcher' && isAdvanced && (metric.title.includes('블론') || metric.title.includes('(BSV)') || metric.title === 'BSV'));
+
+                      const themeColor = isDishonorable ? '#ef4444' : (activeTab === 'batter' ? '#ec4899' : '#06b6d4');
+                      const shadowColor = isDishonorable ? 'rgba(239,68,68,0.25)' : (activeTab === 'batter' ? 'rgba(236,72,153,0.15)' : 'rgba(6,182,212,0.15)');
                       
                       return (
                         <motion.div 
                           key={metric.metricKey} 
                           initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          transition={{ duration: 0.4, delay: mIdx * 0.05, ease: "easeOut" }}
-                          className="relative bg-[#0b101a] rounded-[1.5rem] p-5 flex flex-col group overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
+                          animate={{ 
+                            opacity: 1, 
+                            scale: 1, 
+                            y: 0,
+                            x: isDishonorable ? [-1, 1, -1, 1, 0] : 0 
+                          }}
+                          transition={{ 
+                            duration: 0.4, 
+                            delay: mIdx * 0.05, 
+                            ease: "easeOut",
+                            x: { duration: 0.2, repeat: Infinity, repeatType: "reverse", repeatDelay: 3 }
+                          }}
+                          className={`relative rounded-[1.5rem] p-5 flex flex-col group overflow-hidden border transition-all ${
+                            isDishonorable
+                              ? 'bg-[#1a0b0b] border-red-500/30 hover:border-red-500/50'
+                              : 'bg-[#0b101a] border-white/5 hover:border-white/10'
+                          }`}
                           style={{ 
-                            boxShadow: `0 4px 20px -10px ${shadowColor}`
+                            boxShadow: isDishonorable ? 'inset 0 0 20px rgba(239,68,68,0.05), 0 4px 25px -10px rgba(239,68,68,0.4)' : `0 4px 20px -10px ${shadowColor}`
                           }}
                         >
                           {/* Ambient Glow */}
-                          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[40px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-30" style={{ backgroundColor: themeColor }}></div>
+                          <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[40px] opacity-20 pointer-events-none transition-opacity ${isDishonorable ? 'group-hover:opacity-50 animate-pulse' : 'group-hover:opacity-30'}`} style={{ backgroundColor: themeColor }}></div>
                           
                           <div className="flex items-center justify-between mb-4 relative z-10">
                             <h4 className="text-lg font-black tracking-tight flex items-center gap-2" style={{ color: themeColor }}>
                               {metric.title}
+                              {isDishonorable && (
+                                <motion.span 
+                                  animate={{ rotate: [-10, 10, -10] }} 
+                                  transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                                  className="text-base origin-bottom"
+                                >
+                                  🚨
+                                </motion.span>
+                              )}
                             </h4>
                           </div>
                           
