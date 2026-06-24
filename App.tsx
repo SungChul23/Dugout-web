@@ -76,7 +76,7 @@ function App() {
     const v = targetView as any;
     
     // 로그인 필요한 페이지 체크 (FA 분석 추가)
-    if (['prediction', 'dashboard', 'faAnalysis', 'goldenglove'].includes(v) && !user) {
+    if (['dashboard'].includes(v) && !user) {
        alert('로그인이 필요한 서비스입니다.');
        navigateToLogin();
        return;
