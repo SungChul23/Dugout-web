@@ -268,7 +268,7 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
   // New state for Chart Month Selection
   const [selectedChartMonth, setSelectedChartMonth] = useState<number>(() => {
     const month = new Date().getMonth() + 1;
-    return month >= 4 && month <= 9 ? month : 4;
+    return month >= 4 && month <= 10 ? month : 4;
   });
 
   useEffect(() => {
@@ -714,7 +714,7 @@ const TeamPlayerStats: React.FC<TeamPlayerStatsProps> = ({ onCancel, user }) => 
                   
                   {/* 월 선택 버튼 */}
                   <div className="flex bg-white/5 rounded-xl p-1 gap-1 overflow-x-auto w-full md:w-auto no-scrollbar">
-                    {[4, 5, 6, 7, 8, 9].map(month => (
+                    {[4, 5, 6, 7, 8, 9, 10].map(month => (
                       <button
                         key={month}
                         onClick={() => setSelectedChartMonth(month)}

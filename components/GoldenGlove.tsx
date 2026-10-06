@@ -242,7 +242,7 @@ const GoldenGlove: React.FC<GoldenGloveProps> = ({ onCancel, user }) => {
           </div>
 
           {/* Player Cards on Field */}
-          <div className="relative w-full aspect-square max-w-[800px] max-h-[800px]">
+          <div className="absolute inset-0 w-full h-full max-w-[800px] max-h-[800px] m-auto">
             {FIELD_POSITIONS.map((pos) => {
               const isSelected = selectedPositionKey === pos.dataKey;
               const players = leaderboardData?.leaderboardByPosition[pos.dataKey];

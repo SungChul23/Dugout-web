@@ -18,6 +18,7 @@ import TeamPlayerStats from './components/TeamPlayerStats';
 import PlayerPrediction from './components/PlayerPrediction'; 
 import FaAnalysis from './components/FaAnalysis';
 import GoldenGlove from './components/GoldenGlove'; // New Import
+import Postseason from './components/Postseason';
 import NoticeModal from './components/NoticeModal';
 import ChatBot from './components/ChatBot';
 import { AnimatePresence } from 'framer-motion';
@@ -29,10 +30,26 @@ interface User {
 }
 
 function App() {
-  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction' | 'faAnalysis' | 'goldenglove'>('home');
+  const [view, setView] = useState<'home' | 'signup' | 'login' | 'tickets' | 'guide' | 'news' | 'dashboard' | 'findTeam' | 'schedule' | 'stats' | 'prediction' | 'faAnalysis' | 'goldenglove' | 'postseason'>('home');
   const [user, setUser] = useState<User | null>(null);
   const [showNotice, setShowNotice] = useState(false);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [visitCount, setVisitCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchVisitCount = async () => {
+      try {
+        const response = await api.post('/api/v1/visits');
+        if (response.data && typeof response.data.count === 'number') {
+          setVisitCount(response.data.count);
+        }
+      } catch (error) {
+        // 호출이 실패하면 방문자 수 영역을 숨김 (null 유지)
+        console.error("Failed to fetch visit count:", error);
+      }
+    };
+    fetchVisitCount();
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -82,7 +99,7 @@ function App() {
        return;
     }
 
-    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home', 'prediction', 'faAnalysis', 'goldenglove'].includes(v)) {
+    if (['schedule', 'stats', 'news', 'tickets', 'guide', 'findTeam', 'dashboard', 'home', 'prediction', 'faAnalysis', 'goldenglove', 'postseason'].includes(v)) {
       setView(v);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -162,9 +179,21 @@ function App() {
         {view === 'home' && (
           <div className="animate-fade-in-up">
             <div className="relative z-10 text-center px-4 mb-4 md:mb-8 pt-4 md:pt-16">
-              <div className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-3 py-1 mb-4 md:mb-6 backdrop-blur-sm">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                <span className="text-[10px] md:text-xs font-mono text-slate-300">2026 KBO 시즌 데이터 업데이트 완료</span>
+              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 mb-6 md:mb-8">
+                <div className="inline-flex items-center space-x-2.5 bg-white/10 border border-white/20 rounded-full px-4 py-2 md:px-5 md:py-2.5 backdrop-blur-md shadow-md">
+                  <span className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                  <span className="text-xs md:text-sm lg:text-base font-semibold text-slate-100 tracking-wide">
+                    2026 KBO 시즌 데이터 업데이트 완료
+                  </span>
+                </div>
+                {visitCount !== null && (
+                  <div className="inline-flex items-center space-x-2.5 bg-cyan-500/10 border border-cyan-400/40 rounded-full px-4 py-2 md:px-5 md:py-2.5 backdrop-blur-md shadow-md">
+                    <span className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-cyan-400 animate-ping shrink-0"></span>
+                    <span className="text-xs md:text-sm lg:text-base font-semibold text-slate-100 tracking-wide">
+                      오늘 방문자 <strong className="text-cyan-300 font-extrabold text-sm md:text-base lg:text-lg ml-0.5">{visitCount}</strong>명
+                    </span>
+                  </div>
+                )}
               </div>
               
               <h1 className="text-4xl md:text-7xl font-black mb-4 md:mb-6 leading-tight tracking-tight">
@@ -185,7 +214,7 @@ function App() {
               <AnalysisRing />
             </div>
 
-            <div className="relative z-20 flex justify-center -mt-16 md:-mt-20 mb-16 md:mb-20">
+            <div className="relative z-20 flex flex-col sm:flex-row justify-center items-center gap-4 -mt-16 md:-mt-20 mb-16 md:mb-20 px-4">
               <button 
                 onClick={user ? navigateToDashboard : navigateToSignup}
                 className="group relative bg-white text-brand-dark px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-base md:text-lg shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(6,182,212,0.6)] transition-all transform hover:-translate-y-1 overflow-hidden"
@@ -197,6 +226,19 @@ function App() {
                    </svg>
                  </span>
                  <div className="absolute inset-0 bg-gradient-to-r from-brand-accent to-brand-primary opacity-0 group-hover:opacity-10 transition-opacity"></div>
+              </button>
+
+              <button 
+                onClick={() => handleMenuClick('postseason')}
+                className="group relative bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-base md:text-lg shadow-[0_0_40px_rgba(245,158,11,0.4)] hover:shadow-[0_0_60px_rgba(239,68,68,0.7)] transition-all transform hover:-translate-y-1 overflow-hidden flex items-center gap-2"
+              >
+                 <span className="relative z-10 flex items-center">
+                   <span>🍁 가을야구 입장하기</span>
+                   <svg className="w-4 h-4 md:w-5 md:h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                   </svg>
+                 </span>
+                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
               </button>
             </div>
 
@@ -217,6 +259,7 @@ function App() {
         {view === 'prediction' && <PlayerPrediction onCancel={navigateToHome} user={user} />}
         {view === 'faAnalysis' && <FaAnalysis onCancel={navigateToHome} user={user} />} 
         {view === 'goldenglove' && <GoldenGlove onCancel={navigateToHome} user={user} />}
+        {view === 'postseason' && <Postseason onCancel={navigateToHome} user={user} />}
         {view === 'dashboard' && user && (
           <MyDashboard 
             user={user} 

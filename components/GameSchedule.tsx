@@ -22,7 +22,7 @@ interface Game {
   status?: string; // SCHEDULED, LIVE, FINISHED, CANCELED
 }
 
-const MONTHS = [3, 4, 5, 6, 7, 8, 9];
+const MONTHS = [3, 4, 5, 6, 7, 8, 9, 10];
 const DAYS_OF_WEEK = ['일', '월', '화', '수', '목', '금', '토'];
 
 // 한글 팀명 -> constants.ts의 영문 데이터(Color 등) 매핑용
@@ -47,7 +47,7 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
   const currentMonth = kstDate.getMonth() + 1;
   const currentDay = kstDate.getDate();
 
-  const isKboSeason = currentMonth >= 3 && currentMonth <= 9;
+  const isKboSeason = currentMonth >= 3 && currentMonth <= 10;
   const initialMonth = isKboSeason ? currentMonth : 3;
   const initialDay = isKboSeason ? currentDay : 28;
 
@@ -189,7 +189,7 @@ const GameSchedule: React.FC<GameScheduleProps> = ({ onCancel, user }) => {
              </svg>
            </div>
            <p className="text-slate-300 text-sm md:text-base leading-relaxed font-medium">
-             KBO 정규시즌은 팀당 144경기를 치르며, 이 중 9월 초/중순까지 우천 취소 등을 고려해 팀당 135경기가 우선 편성됩니다.
+             KBO 정규시즌은 팀당 144경기를 치르며, KBO 2026 시즌 공식 마무리 날짜는 10월 7일(수)입니다.
            </p>
         </div>
 
